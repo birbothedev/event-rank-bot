@@ -7,3 +7,8 @@ node_modules/
 
 # configs
 config.json
+
+# database stuff
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

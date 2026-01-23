@@ -4,12 +4,7 @@ import { EmbedBuilder } from 'discord.js';
 export const eventEmbed = new EmbedBuilder()
 	.setColor(0x0099ff)
 	.addFields(
-		{ name: 'Regular field title', value: 'Some value here' },
-		{ name: '\u200B', value: '\u200B' },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
+		{ name: 'Total Sign Ups', value: '0', inline: true },
 	)
-	.addFields({ name: 'Inline field title', value: 'Some value here', inline: false })
-	.setImage('https://i.imgur.com/AfFp7pu.png')
 	.setTimestamp()
 	.setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });

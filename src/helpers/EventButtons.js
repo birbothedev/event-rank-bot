@@ -3,15 +3,17 @@ import { ActionRowBuilder,
 	ButtonStyle
 } from 'discord.js';
 
-const button1 = new ButtonBuilder()
-    .setCustomId('button1') 
+export function createSignupActionRow(eventId){
+
+    const signupbutton = new ButtonBuilder()
+    // set button id to the correct event
+    .setCustomId(`signupbutton:${eventId}`) 
     .setLabel('✍️ Sign Up')
     .setStyle(ButtonStyle.Primary);
 
-const button3 = new ButtonBuilder()
-    .setCustomId('button3') 
-    .setLabel('📌 About the Event')
-    .setStyle(ButtonStyle.Secondary);
+    return new ActionRowBuilder()
+        .addComponents(signupbutton);
+}
 
-export const actionRow = new ActionRowBuilder()
-    .addComponents(button1, button3);
+// TODO add 'Change Account' button for players to change which account they are signed up under
+// TODO add 'Check Account' button for players to check which account they are signed up under
