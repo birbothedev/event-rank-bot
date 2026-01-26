@@ -7,15 +7,12 @@ import {
 	EmbedBuilder,
 	ChannelType,
 	MessageFlags,
-	ModalBuilder,
-	TextInputBuilder,
-	TextInputStyle,
-	LabelBuilder
 } from 'discord.js';
 import 'dotenv/config';
 import { commands } from './commands/commands.js';
-import { signupModal } from './helpers/EventModals.js';
+import { createSignUpModal, createChangeAccountModal } from './helpers/EventModals.js';
 import { db } from './database.js';
+import { getExistingRSN, getUpdatedSignUpCount, updateExistingRSN } from './helpers/helperfunctions.js';
 
 const token = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -43,10 +40,14 @@ client.on('clientReady', async () => {
 
 	const welcomeEmbed = new EmbedBuilder()
 		.setColor(0x00FF00) // Green color
-        .setTitle('Bot Online!')
+        .setTitle('OSRS Event Bot Online!')
         .setDescription('Hello everyone! I have just successfully connected to the Discord API.')
+		.addFields(
+			{ name: 'Admin Only Event Commands', value: 'Use these commands to add or update event information:\n**/addevent**\nUse this command to add an event.\n**/updateevent**\nUse this command to update or change an event.\n**/deleteevent**\nUse this command to remove an event from the database.\n**/closesignups**\nUse this command to close the signups for an event.' },
+			{ name: 'Admin Only Player Commands', value: 'Use these commands to add or update player information:\n**/deleteplayer**\nUse this command to delete a player from the database.\n**/changeplayerrsn**\nUse this command to change the rsn that the player is signed up under.\n' },
+		)
         .setTimestamp()
-        .setFooter({ text: 'Bot Load Message' });
+        .setFooter({ text: 'OSRS Event Bot', iconURL: 'https://twemoji.maxcdn.com/v/latest/72x72/1f525.png' });
 
 	try {
 		const channel = await client.channels.fetch(CHANNEL_ID);
@@ -102,39 +103,65 @@ client.on(Events.InteractionCreate, async interaction => {
 
 	// buttons
 	if (interaction.isButton()) {
+		// grab the event id from the end of the string
+		const eventId = interaction.customId.split(':')[1];
+		const userId = interaction.user.id;
+
+		// sign up
 		if (interaction.customId.startsWith('signupbutton:')) {
-			// grab the event id from the end of the string
-			const eventId = interaction.customId.split(':')[1];
-
-			// create sign up modal
-			const signupModal = new ModalBuilder()
-				.setCustomId(`signupmodal:${eventId}`)
-				.setTitle('Event Sign Up');
-			
-			const rsnInput = new TextInputBuilder()
-				.setCustomId('rsninput')
-				.setStyle(TextInputStyle.Short)
-				.setPlaceholder('RSN of the account you will participate on.')
-				.setMaxLength(20)
-				.setMinLength(1)
-				.setRequired(true);
-			const signupLabel = new LabelBuilder()
-				.setLabel("Sign Up to Participate")
-				.setDescription('Limit 1 account per player.')
-				.setTextInputComponent(rsnInput);
-
-			signupModal.addLabelComponents(signupLabel);
-
-			return interaction.showModal(signupModal);
-		}
-		const [action, eventId] = interaction.customId.split(':');
-
-		if (action === 'signupbutton') {
 			try {
 				// link submission to correct event id
-				await interaction.showModal(signupModal(eventId));
+				await interaction.showModal(createSignUpModal(eventId));
 			} catch (err) {
 				console.error('Modal error:', err);
+				await interaction.reply({
+					content: '❌ Something went wrong. Please wait a moment and try again',
+					flags: MessageFlags.Ephemeral
+				});
+			}
+		} 
+
+		// change account
+		else if (interaction.customId.startsWith('changeAccountButton:')) {
+			try {
+				const existingSignUp = await getExistingRSN(userId, eventId);
+				if (!existingSignUp) {
+					return await interaction.reply({
+							content: `⚠️ You are not currently signed up for this event.`,
+							flags: MessageFlags.Ephemeral
+					});
+				}
+				await interaction.showModal(createChangeAccountModal(eventId));
+			} catch (err) {
+				console.error('Modal error:', err);
+				await interaction.reply({
+					content: '❌ Something went wrong changing your account.',
+					flags: MessageFlags.Ephemeral
+				});
+			}
+		} 
+		
+		// check account
+		else if (interaction.customId.startsWith('checkAccountButton:')) {
+			try {
+				const existingSignUp = await getExistingRSN(userId, eventId);
+				if (!existingSignUp) {
+					return await interaction.reply({
+						content: `⚠️ You are not currently signed up for this event.`,
+						flags: MessageFlags.Ephemeral
+					});
+				}
+				return await interaction.reply({
+					content: `✅ You are signed up for this event under: ${existingSignUp.rsn}`,
+					flags: MessageFlags.Ephemeral
+				});
+			} catch (err) {
+				console.error('Modal error:', err);
+
+				await interaction.reply({
+					content: '❌ Something went wrong checking your signup.',
+					flags: MessageFlags.Ephemeral
+				});
 			}
 		}
 		return;
@@ -145,26 +172,15 @@ client.on(Events.InteractionCreate, async interaction => {
 		if (interaction.customId.startsWith('signupmodal:')) {
 
 			const eventId = interaction.customId.split(':')[1];
+			const userId = interaction.user.id;
+			const rsnInput = interaction.fields.getTextInputValue('rsninput');
 
 			// hold reply until it knows if its a dupe submission or not
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 			try {
-				const rsnInput = interaction.fields.getTextInputValue('rsninput');
-				const userId = interaction.user.id;
-
-				// check if user already signed up for this event
-				const exists = db.prepare(`
-					SELECT 1 FROM event_signups 
-					WHERE user_id = ?  AND rsn = ? AND event_id = ?
-				`).get(userId, rsnInput, eventId);
-
-				if (exists) {
-					// edit the reply for dupe submission
-					return interaction.editReply({
-						content: `⚠️ You are already signed up for this event under: ${rsnInput}`
-					})
-				}
+				// TODO if name not found on WOM, send error to user before inserting into db
+				// TODO only emerald+ ranks can sign up
 
 				// add values to db
 				db.prepare(`
@@ -173,14 +189,20 @@ client.on(Events.InteractionCreate, async interaction => {
 					VALUES (?, ?, ?, ?, ?)
 					`).run(
 					eventId,
-					interaction.user.id,
+					userId,
 					interaction.user.username,
 					rsnInput,
 					Date.now()
 				);
 
-				// TODO if name not found on WOM, send error to user
-				// TODO send error if user already submitted a name
+				// update sign ups count from database
+				const signupCount = await getUpdatedSignUpCount(eventId);
+				const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0]);
+				updatedEmbed.data.fields[1].value = `${signupCount}`;
+
+				await interaction.message.edit({
+					embeds: [updatedEmbed]
+				});
 
 				// edit the reply for good submission
 				return interaction.editReply({
@@ -189,11 +211,49 @@ client.on(Events.InteractionCreate, async interaction => {
 			} catch (error) {
 				console.error("Modal submit error: ", error);
 
+				if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+					// check if user already signed up for this event
+					const existingSignUp = await getExistingRSN(userId, eventId);
+
+					// edit the reply for dupe submission
+					return interaction.editReply({
+						content: `⚠️ You are already signed up for this event under: ${existingSignUp.rsn}`
+					});
+				}
+
 				// send error message to user
 				return interaction.editReply({
 					content: "❌ Something went wrong while saving your signup. Please try again."
 				});
 			}
+		} else if (interaction.customId.startsWith('changeaccountmodal:')) {
+			const eventId = interaction.customId.split(':')[1];
+			const userId = interaction.user.id;
+			const changersnInput = interaction.fields.getTextInputValue('changersninput');
+
+			// hold reply
+			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+			try {
+				const changes = await updateExistingRSN(userId, eventId, changersnInput);
+
+				if (changes === 0) {
+					return await interaction.editReply({
+						content: `⚠️ You are not currently signed up for this event.`,
+						flags: MessageFlags.Ephemeral
+					});
+				} 
+
+				return interaction.editReply({
+					content: `✅ Successfully changed sign up to: ${changersnInput}`,
+					flags: MessageFlags.Ephemeral
+				});
+			} catch (error) {
+				console.error("Modal submit error: ", error);
+				return interaction.editReply({
+					content: "❌ Something went wrong while editing your signup. Please try again."
+				});
+			}	
 		}
 	}
 });

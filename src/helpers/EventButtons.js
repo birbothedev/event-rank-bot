@@ -6,14 +6,21 @@ import { ActionRowBuilder,
 export function createSignupActionRow(eventId){
 
     const signupbutton = new ButtonBuilder()
-    // set button id to the correct event
-    .setCustomId(`signupbutton:${eventId}`) 
-    .setLabel('✍️ Sign Up')
-    .setStyle(ButtonStyle.Primary);
+        // set button id to the correct event
+        .setCustomId(`signupbutton:${eventId}`) 
+        .setLabel('📝 Sign Up')
+        .setStyle(ButtonStyle.Primary);
+
+    const changeAccountButton = new ButtonBuilder()
+        .setCustomId(`changeAccountButton:${eventId}`)
+        .setLabel('✍️ Change Account')
+        .setStyle(ButtonStyle.Secondary)
+
+    const checkAccountButton = new ButtonBuilder()
+        .setCustomId(`checkAccountButton:${eventId}`)
+        .setLabel('❓ Check Account')
+        .setStyle(ButtonStyle.Secondary)
 
     return new ActionRowBuilder()
-        .addComponents(signupbutton);
+        .addComponents(signupbutton, checkAccountButton, changeAccountButton);
 }
-
-// TODO add 'Change Account' button for players to change which account they are signed up under
-// TODO add 'Check Account' button for players to check which account they are signed up under

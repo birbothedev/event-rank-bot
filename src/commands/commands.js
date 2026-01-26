@@ -1,7 +1,8 @@
-import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
-import { eventEmbed } from '../helpers/EventMessageEmbed.js';
+import { EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { createSignupActionRow } from '../helpers/EventButtons.js';
 import { db } from '../database.js';
+
+const events = db.prepare(`SELECT * FROM events`).all();
 
 export const commands = [
 	{
@@ -43,7 +44,8 @@ export const commands = [
 					.setName('description')
 					.setDescription('A brief description of the event')
 					.setRequired(false)
-			),
+			)
+			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
 		async execute(interaction) {
 			const attachment = interaction.options.getAttachment('image'); // get image from slash command
@@ -51,11 +53,17 @@ export const commands = [
 			const description = interaction.options.getString('description');
 			const teamsizes = interaction.options.getInteger('teamsizes');
 
-			const embedWithStuff = eventEmbed
+			const embedWithStuff = new EmbedBuilder()
 				.setImage(attachment.url) // set the image on the embed
 				.setTitle(title)
+				.setColor(0x0099ff)
 				.setDescription(description)
-				.addFields({ name: 'Team Sizes', value: `${teamsizes} players`, inline: true }); 
+				.addFields(
+					{ name: '👥 Team Size', value: `${teamsizes} players`, inline: true },
+					{ name: '📝 Sign-ups', value: '0', inline: true }
+				)
+				.setTimestamp()
+				.setFooter({ text: 'OSRS Event Bot', iconURL: 'https://twemoji.maxcdn.com/v/latest/72x72/1f525.png' }); 
 
 			const result = db.prepare(`
 				INSERT INTO events (name, description, image_url, team_size, created_at)
@@ -75,11 +83,24 @@ export const commands = [
 		data: new SlashCommandBuilder()
 			.setName('rankallplayers')
 			.setDescription('Runs the rank script on all players. Only run once sign ups have closed.')
-			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+			.addStringOption(option =>
+				option
+					.setName('event')
+					.setDescription('Choose an event')
+					.setRequired(true)
+					.addChoices(
+					...events.map(event => ({
+						name: event.name,    
+						value: event.id.toString() 
+					}))
+				)
+			),
 
 		async execute(interaction) {
+			// TODO get event id from selection and use it to pull the list of players from that event
 			await interaction.reply(
-				'test reply'
+				'yipee'
 			);
 		}
 	},
