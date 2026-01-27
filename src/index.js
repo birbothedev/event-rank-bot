@@ -13,6 +13,7 @@ import { commands } from './commands/commands.js';
 import { createSignUpModal, createChangeAccountModal } from './helpers/EventModals.js';
 import { db } from './database.js';
 import { getExistingRSN, getUpdatedSignUpCount, updateExistingRSN } from './helpers/helperfunctions.js';
+import { validateRSN } from './data/main.js';
 
 const token = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -43,7 +44,7 @@ client.on('clientReady', async () => {
         .setTitle('OSRS Event Bot Online!')
         .setDescription('Hello everyone! I have just successfully connected to the Discord API.')
 		.addFields(
-			{ name: 'Admin Only Event Commands', value: 'Use these commands to add or update event information:\n**/addevent**\nUse this command to add an event.\n**/updateevent**\nUse this command to update or change an event.\n**/deleteevent**\nUse this command to remove an event from the database.\n**/closesignups**\nUse this command to close the signups for an event.' },
+			{ name: 'Admin Only Event Commands', value: 'Use these commands to add or update event information:\n**/addevent**\nUse this command to add an event.\n**/updateevent**\nUse this command to update or change an event.\n**/deleteevent**\nUse this command to remove an event from the database.\n**/closesignups**\nUse this command to close the signups for an event.\n**/openevent**\nUse this command to re-open an existing event for signups.' },
 			{ name: 'Admin Only Player Commands', value: 'Use these commands to add or update player information:\n**/deleteplayer**\nUse this command to delete a player from the database.\n**/changeplayerrsn**\nUse this command to change the rsn that the player is signed up under.\n' },
 		)
         .setTimestamp()
@@ -179,35 +180,45 @@ client.on(Events.InteractionCreate, async interaction => {
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 			try {
-				// TODO if name not found on WOM, send error to user before inserting into db
 				// TODO only emerald+ ranks can sign up
+				// TODO validate RSN against list of IF players
 
-				// add values to db
-				db.prepare(`
-					INSERT INTO event_signups
-					(event_id, user_id, username, rsn, created_at)
-					VALUES (?, ?, ?, ?, ?)
-					`).run(
-					eventId,
-					userId,
-					interaction.user.username,
-					rsnInput,
-					Date.now()
-				);
+				const validatedRSN = await validateRSN(rsnInput);
 
-				// update sign ups count from database
-				const signupCount = await getUpdatedSignUpCount(eventId);
-				const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0]);
-				updatedEmbed.data.fields[1].value = `${signupCount}`;
+				if (validatedRSN) {
+					// add values to db
+					db.prepare(`
+						INSERT INTO event_signups
+						(event_id, user_id, username, rsn, created_at)
+						VALUES (?, ?, ?, ?, ?)
+						`).run(
+						eventId,
+						userId,
+						interaction.user.username,
+						rsnInput,
+						Date.now()
+					);
 
-				await interaction.message.edit({
-					embeds: [updatedEmbed]
-				});
+					// update sign ups count from database
+					const signupCount = await getUpdatedSignUpCount(eventId);
+					const updatedEmbed = EmbedBuilder.from(interaction.message.embeds[0]);
+					updatedEmbed.data.fields[1].value = `${signupCount}`;
 
-				// edit the reply for good submission
-				return interaction.editReply({
-					content: `✅ Successfully signed up with: ${rsnInput}`
-				})
+					await interaction.message.edit({
+						embeds: [updatedEmbed]
+					});
+
+					// edit the reply for good submission
+					return interaction.editReply({
+						content: `✅ Successfully signed up with: ${rsnInput}`
+					})
+				} else {
+					return interaction.editReply({
+						content: `❌ Could not find rsn: ${rsnInput}. Please try again.`
+					})
+				}
+
+				
 			} catch (error) {
 				console.error("Modal submit error: ", error);
 
