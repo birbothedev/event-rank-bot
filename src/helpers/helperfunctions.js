@@ -1,4 +1,5 @@
 import { db } from '../database.js';
+import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
 
 export async function getUpdatedSignUpCount(eventId) {
 	const getSignUpCount = 
@@ -30,4 +31,22 @@ export async function updateExistingRSN(userId, eventId, newrsn) {
 
     // returns number of changes so we can check if any changes were made
     return row.changes;
+}
+
+export async function validateRSN(rsn, parsedCSVData){
+    const foundRSN = parsedCSVData?.find(player => player.player === rsn);
+
+    if (!foundRSN){
+
+        console.log("could not find name, refreshing data");
+        // refresh clan player list csv
+        const groupCSV = await getGroupRSN_ToCSV(9403);
+        const parsedData = await parseDataFromCSV(groupCSV, 'parsedcsv', 'outputs');
+
+        // search for player again
+        return parsedData.find(player => player.player === rsn);
+
+    } 
+
+    return foundRSN ?? null;
 }

@@ -12,8 +12,9 @@ import 'dotenv/config';
 import { commands } from './commands/commands.js';
 import { createSignUpModal, createChangeAccountModal } from './helpers/EventModals.js';
 import { db } from './database.js';
-import { getExistingRSN, getUpdatedSignUpCount, updateExistingRSN } from './helpers/helperfunctions.js';
-import { validateRSN } from './data/main.js';
+import { getExistingRSN, getUpdatedSignUpCount, 
+	updateExistingRSN, validateRSN } from './helpers/helperfunctions.js';
+import { readFromFile } from './data/data-cleaning/output.js';
 
 const token = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -182,8 +183,11 @@ client.on(Events.InteractionCreate, async interaction => {
 			try {
 				// TODO only emerald+ ranks can sign up
 				// TODO validate RSN against list of IF players
+				// TODO bot auto assigns event participant role after accepting sign up
 
-				const validatedRSN = await validateRSN(rsnInput);
+				// get clan member list from file
+				const parsedCSVData = await readFromFile('outputs', 'parsedcsv');
+				const validatedRSN = await validateRSN(rsnInput, parsedCSVData);
 
 				if (validatedRSN) {
 					// add values to db

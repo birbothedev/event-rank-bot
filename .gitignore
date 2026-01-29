@@ -12,3 +12,6 @@ config.json
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# json stuff
+parsedcsv.json

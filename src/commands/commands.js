@@ -2,6 +2,7 @@ import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } 
 import { createSignupActionRow } from '../helpers/EventButtons.js';
 import { db } from '../database.js';
 import { rankAllPlayers } from '../data/main.js';
+import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
 
 const events = db.prepare(`SELECT * FROM events`).all();
 
@@ -62,10 +63,15 @@ export const commands = [
 
 			const eventId = result.lastInsertRowid;
 
+			const groupCSV = await getGroupRSN_ToCSV(9403);
+			const parsedData = await parseDataFromCSV(groupCSV, 'parsedcsv', 'outputs');
+
 			await interaction.reply({ 
 				embeds: [embedWithStuff],
 				components: [createSignupActionRow(eventId)] }
 			);
+
+			return parsedData;
 		}
 	},
 	{
