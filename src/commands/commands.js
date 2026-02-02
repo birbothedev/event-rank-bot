@@ -8,8 +8,6 @@ import { rankAllPlayers } from '../data/main.js';
 const events = db.prepare(`SELECT * FROM events`).all();
 
 export const commands = [
-	// TODO add command to pull up existing event and re open signups rather than having to add new one in case of restart
-
 		// ----------------- ADD EVENT --------------------- //
 	{
 		data: new SlashCommandBuilder()
@@ -103,12 +101,6 @@ export const commands = [
 			});
 
 			const selectedEventId = interaction.options.getString('events');
-
-			const players = db.prepare(`
-				SELECT rsn FROM event_signups
-				WHERE event_id = ?
-				`).get(selectedEventId);
-
 			const event = db.prepare(`
 				SELECT name FROM events
 				WHERE id = ?
@@ -120,9 +112,7 @@ export const commands = [
 
 			// TODO bot returns json text file of all ranked players
 			const playerList = await getPlayerListFromDB(selectedEventId);
-			console.log("players: ", playerList);
-			const rankedPlayers = await rankAllPlayers(playerList, 'raw-data', 'outputs');
-			console.log(rankedPlayers);
+			const rankedPlayers = await rankAllPlayers(playerList, selectedEventId);
 			// await interaction.channel.send({ files: [rankedPlayers] });
 		}
 	},
@@ -182,7 +172,6 @@ export const commands = [
 				WHERE event_id = ?
 				`).get(selectedEventId);
 
-			// TODO upload new image when re-opening event rather than pulling from db
 			const embed = new EmbedBuilder()
 				.setImage(attachment.url) 
 				.setTitle(`${event.name}`)
@@ -194,8 +183,6 @@ export const commands = [
 				)
 				.setTimestamp()
 				.setFooter({ text: 'OSRS Event Bot', iconURL: 'https://twemoji.maxcdn.com/v/latest/72x72/1f525.png' }); 
-
-				console.log(event.image_url);
 
 			await interaction.reply({ 
 				embeds: [embed],

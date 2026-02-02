@@ -15,4 +15,4 @@ config.json
 
 # json stuff
 parsedcsv.json
-raw-data.json
+*data*.json

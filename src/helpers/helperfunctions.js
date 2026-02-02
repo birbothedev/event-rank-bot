@@ -34,7 +34,7 @@ export async function updateExistingRSN(userId, eventId, newrsn) {
 }
 
 export async function validateRSN(rsn, parsedCSVData){
-    const foundRSN = parsedCSVData?.find(player => player.player === rsn);
+    const foundRSN = parsedCSVData?.find(player => player.player.toLowerCase() === rsn);
 
     if (!foundRSN){
 
