@@ -10,7 +10,7 @@ export async function writeToFile(data, fileName, TEMP_DIR){
 
     try {
         await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf8");
-        console.log(`Data written to ${filePath}`);
+        console.log(`poop ${filePath}`);
     } catch (err) {
         console.error("Error writing file", err);
     }

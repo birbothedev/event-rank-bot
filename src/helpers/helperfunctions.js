@@ -45,8 +45,15 @@ export async function validateRSN(rsn, parsedCSVData){
 
         // search for player again
         return parsedData.find(player => player.player === rsn);
-
-    } 
-
+    }
     return foundRSN ?? null;
+}
+
+export async function getPlayerListFromDB(eventId){
+    const playerList = db.prepare(`
+            SELECT rsn FROM event_signups
+            WHERE event_id = ?
+        `).all(eventId);
+
+    return playerList;
 }

@@ -1,7 +1,7 @@
 import { client } from "../womclient.js";
 import csv from "csv-parser";
 import { Readable } from 'stream';
-import { writeToFile } from "./output.js";
+import { writeToFile, delay } from "./output.js";
 
 export async function getGroupRSN_ToCSV(groupNumber){
     const group = await client.groups.getMembersCSV(groupNumber);
@@ -32,4 +32,55 @@ export async function parseDataFromCSV(groupData, exportFileName, TEMP_DIR){
     writeToFile(cleanedData, exportFileName, TEMP_DIR);
 
     return cleanedData;
+}
+
+
+export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR){
+    const playerDetails = [];
+
+    for (let i=0; i < players.length; i++){
+        const playerName  = players[i].rsn;
+        let success = false;
+        let attempt = 0;
+
+        console.log("player name inside function: ", playerName);
+
+        while (!success && attempt < 10){
+            attempt++;
+            try {
+                console.log(
+                `(${i + 1}/${players.length}) Fetching gains for ${playerName}, attempt ${attempt}`
+                );
+
+                // get player data and add it
+                const playerData = await client.players.getPlayerDetails(playerName);
+                playerDetails.push({ playerName, ...playerData });
+                success=true;
+            } catch (error) {
+                // catch too many requests error
+                if (error.statusCode === 429) {
+                    const waitTime = 15000 * attempt;
+                    console.warn(
+                        `⚠️ Rate limit hit for ${playerName}, waiting ${
+                        waitTime / 1000
+                        }s before retry...`
+                    );
+                    await delay(waitTime);
+                } else {
+                    console.error(
+                        `❌ Error fetching gains for ${playerName}:`,
+                        error.message || error
+                    );
+                    success = true; 
+                }
+            }
+        }
+        // 5 seconds between requests
+        await delay(5000);
+    }
+
+    await writeToFile(playerDetails, exportFileName, TEMP_DIR);
+    console.log(`fetched gains for ${playerDetails.length} players. data saved to ${TEMP_DIR}/${exportFileName}`);
+
+    return playerDetails;
 }

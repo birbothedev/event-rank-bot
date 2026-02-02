@@ -1,13 +1,16 @@
 import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { createSignupActionRow } from '../helpers/EventButtons.js';
 import { db } from '../database.js';
-import { rankAllPlayers } from '../data/main.js';
 import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
+import { getPlayerListFromDB } from '../helpers/helperfunctions.js';
+import { rankAllPlayers } from '../data/main.js';
 
 const events = db.prepare(`SELECT * FROM events`).all();
 
 export const commands = [
 	// TODO add command to pull up existing event and re open signups rather than having to add new one in case of restart
+
+		// ----------------- ADD EVENT --------------------- //
 	{
 		data: new SlashCommandBuilder()
 			.setName('addevent')
@@ -74,6 +77,8 @@ export const commands = [
 			return parsedData;
 		}
 	},
+
+	// ----------------- RANK ALL PLAYERS --------------------- //
 	{
 		data: new SlashCommandBuilder()
 			.setName('rankallplayers')
@@ -114,10 +119,15 @@ export const commands = [
 			});
 
 			// TODO bot returns json text file of all ranked players
-			// const rankedPlayers = rankAllPlayers(players);
+			const playerList = await getPlayerListFromDB(selectedEventId);
+			console.log("players: ", playerList);
+			const rankedPlayers = await rankAllPlayers(playerList, 'raw-data', 'outputs');
+			console.log(rankedPlayers);
 			// await interaction.channel.send({ files: [rankedPlayers] });
 		}
 	},
+
+	// ----------------- CLOSE SIGN UPS --------------------- //
 	{
 		data: new SlashCommandBuilder()
 			.setName('closesignups')
@@ -130,11 +140,19 @@ export const commands = [
 			);
 		}
 	},
+
+	// ----------------- RE OPEN EXISTING EVENT --------------------- //
 	{
 		data: new SlashCommandBuilder()
 			.setName('openevent')
 			.setDescription('Re-opens an existing event for signups. Does not remove old signups.')
 			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+			.addAttachmentOption(option =>
+				option
+					.setName('image')
+					.setDescription('The image file to upload')
+					.setRequired(true) 
+			)
 			.addStringOption(option =>
 				option
 					.setName('events')
@@ -150,9 +168,10 @@ export const commands = [
 
 		async execute(interaction) {
 			const selectedEventId = interaction.options.getString('events');
+			const attachment = interaction.options.getAttachment('image');
 
 			const event = db.prepare(`
-				SELECT name, description, image_url, team_size, 
+				SELECT name, description, team_size, 
 				created_at, is_open
 				FROM events WHERE id = ?
 				`).get(selectedEventId);
@@ -163,8 +182,9 @@ export const commands = [
 				WHERE event_id = ?
 				`).get(selectedEventId);
 
+			// TODO upload new image when re-opening event rather than pulling from db
 			const embed = new EmbedBuilder()
-				.setImage(event.image_url) 
+				.setImage(attachment.url) 
 				.setTitle(`${event.name}`)
 				.setColor(0x0099ff)
 				.setDescription(`${event.description}`)
