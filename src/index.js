@@ -187,7 +187,7 @@ client.on(Events.InteractionCreate, async interaction => {
 				// TODO bot auto assigns event participant role after accepting sign up
 
 				// get clan member list from file
-				const parsedCSVData = await readFromFile('outputs', 'parsedcsv');
+				const parsedCSVData = await readFromFile('outputs', `parsedcsv${eventId}`);
 				const validatedRSN = await validateRSN(normalizedRSN, parsedCSVData);
 
 				if (validatedRSN) {
@@ -279,3 +279,4 @@ client.once(Events.ClientReady, c => {
 });
 
 client.login(token);
+

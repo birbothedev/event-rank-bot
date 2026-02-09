@@ -14,5 +14,5 @@ config.json
 *.sqlite-shm
 
 # json stuff
-parsedcsv.json
+parsedcsv*.json
 *data*.json

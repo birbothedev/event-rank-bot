@@ -1,7 +1,10 @@
+import { FileComponent } from "discord.js";
 import fs from "fs/promises";
 import path from "path";
 
 export async function writeToFile(data, fileName, TEMP_DIR){
+    if (!fileName) throw new Error("writeToFile called without filename");
+
     const directory = path.join(process.cwd(), 'data', TEMP_DIR);
     const filePath = path.join(directory, `${fileName}.json`);
 
@@ -36,4 +39,13 @@ export async function readFromFile(TEMP_DIR, fileName){
 
 export function delay(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function filePath(TEMP_DIR, fileName){
+    if (!fileName) throw new Error("filePath called without filename");
+
+    const directory = path.join(process.cwd(), 'data', TEMP_DIR);
+    const filePath = path.join(directory, `${fileName}.json`);
+
+    return filePath;
 }

@@ -3,7 +3,7 @@ import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getda
 
 export async function getUpdatedSignUpCount(eventId) {
 	const getSignUpCount = 
-		await db.prepare(`
+		db.prepare(`
                 SELECT COUNT(rsn) AS count
                 FROM event_signups
                 WHERE event_id = ?
@@ -13,7 +13,8 @@ export async function getUpdatedSignUpCount(eventId) {
 }
 
 export async function getExistingRSN(userId, eventId){
-    const existingSignUp = await db.prepare(`
+    const existingSignUp = db.prepare(`
+        
         SELECT rsn
         FROM event_signups
         WHERE user_id = ? AND event_id = ?
@@ -56,4 +57,14 @@ export async function getPlayerListFromDB(eventId){
         `).all(eventId);
 
     return playerList;
+}
+
+export async function getUpdatedEventsList(){
+    const getEvents = 
+		db.prepare(`
+                SELECT name, id 
+                FROM events
+            `).all();
+
+	return getEvents;
 }

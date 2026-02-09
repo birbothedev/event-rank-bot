@@ -1,11 +1,13 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { AttachmentBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import { createSignupActionRow } from '../helpers/EventButtons.js';
 import { db } from '../database.js';
-import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
-import { getPlayerListFromDB } from '../helpers/helperfunctions.js';
+import { getGroupRSN_ToCSV, parseCSVWithDBList, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
+import { getPlayerListFromDB, getUpdatedEventsList } from '../helpers/helperfunctions.js';
 import { rankAllPlayers } from '../data/main.js';
+import { filePath } from '../data/data-cleaning/output.js';
+import { buildEventSelectMenu } from '../helpers/EventSelectDropdown.js';
 
-const events = db.prepare(`SELECT * FROM events`).all();
+let events = await getUpdatedEventsList();
 
 export const commands = [
 		// ----------------- ADD EVENT --------------------- //
@@ -65,7 +67,7 @@ export const commands = [
 			const eventId = result.lastInsertRowid;
 
 			const groupCSV = await getGroupRSN_ToCSV(9403);
-			const parsedData = await parseDataFromCSV(groupCSV, 'parsedcsv', 'outputs');
+			const parsedData = await parseDataFromCSV(groupCSV, `parsedcsv${eventId}`, 'outputs');
 
 			await interaction.reply({ 
 				embeds: [embedWithStuff],
@@ -100,20 +102,36 @@ export const commands = [
 				flags: MessageFlags.Ephemeral
 			});
 
+			
+
 			const selectedEventId = interaction.options.getString('events');
-			const event = db.prepare(`
-				SELECT name FROM events
-				WHERE id = ?
-				`).get(selectedEventId);
+			try {
+				const event = db.prepare(`
+					SELECT name FROM events
+					WHERE id = ?
+					`).get(selectedEventId);
 
-			await interaction.editReply({ 
-				content: `🟢 Ranking all players from ${event.name}...`
-			});
+				await interaction.editReply({ 
+					content: `🟢 Ranking all players from ${event.name}...`
+				});
 
-			// TODO bot returns json text file of all ranked players
-			const playerList = await getPlayerListFromDB(selectedEventId);
-			const rankedPlayers = await rankAllPlayers(playerList, selectedEventId);
-			// await interaction.channel.send({ files: [rankedPlayers] });
+				const playerList = await getPlayerListFromDB(selectedEventId);
+				const parsedPlayerList = await parseCSVWithDBList(playerList)
+				await rankAllPlayers(parsedPlayerList, selectedEventId);
+
+				const rankedFilePath = await filePath('outputs', `ranked-data${selectedEventId}`);
+				const fileToReturn = new AttachmentBuilder(rankedFilePath);
+				await interaction.channel.send({ 
+					content: '✅ Successfully ranked players.',
+					files: [fileToReturn] });
+			} catch (error) {
+				console.error('Error Ranking Players:', error);
+
+				await interaction.editReply({
+					content: '❌ Something went wrong while attempting to rank players.',
+					flags: MessageFlags.Ephemeral
+				});
+			}
 		}
 	},
 
@@ -188,6 +206,64 @@ export const commands = [
 				embeds: [embed],
 				components: [createSignupActionRow(selectedEventId)] }
 			);
+		}
+	},
+
+	// ----------------- UPDATE EVENTS --------------------- //
+	{
+		data: new SlashCommandBuilder()
+			.setName('updateevents')
+			.setDescription('Refresh the list of events from the DB')
+			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+
+		async execute(interaction) {
+			await interaction.deferReply({ 
+				flags: MessageFlags.Ephemeral
+			});
+
+			try {
+				events = await getUpdatedEventsList();
+				await interaction.editReply({
+					content: '✅ Successfully updated events list.',
+					flags: MessageFlags.Ephemeral
+				});
+				console.log(events);
+			} catch (error){
+				console.error('Error updating events:', error);
+				await interaction.editReply({
+					content: '❌ Something went wrong while attempting to update the events list.',
+					flags: MessageFlags.Ephemeral
+				});
+			}
+		}
+	},
+
+	{
+		data: new SlashCommandBuilder()
+			.setName('testcommand')
+			.setDescription('Refresh the list of events from the DB')
+			.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+
+		async execute(interaction) {
+			await interaction.deferReply({ 
+				flags: MessageFlags.Ephemeral
+			});
+
+			const eventRow = await buildEventSelectMenu();
+
+			try {
+				await interaction.editReply({
+					content: 'Please choose an event.',
+					components: [eventRow],
+					flags: MessageFlags.Ephemeral
+				});
+			} catch (error){
+				console.error('Error updating events:', error);
+				await interaction.editReply({
+					content: '❌ Something went wrong while attempting to update the events list.',
+					flags: MessageFlags.Ephemeral
+				});
+			}
 		}
 	}
 ];

@@ -1,7 +1,7 @@
 import { client } from "../womclient.js";
 import csv from "csv-parser";
 import { Readable } from 'stream';
-import { writeToFile, delay } from "./output.js";
+import { writeToFile, delay, readFromFile } from "./output.js";
 
 export async function getGroupRSN_ToCSV(groupNumber){
     const group = await client.groups.getMembersCSV(groupNumber);
@@ -34,16 +34,33 @@ export async function parseDataFromCSV(groupData, exportFileName, TEMP_DIR){
     return cleanedData;
 }
 
+export async function parseCSVWithDBList(DBplayerList){
+    const CSVplayerList = await readFromFile('outputs', 'parsedcsv');
+    const combinedPlayers = [];
+
+    for (let i=0; i<DBplayerList.length; i++){
+        const foundPlayer = CSVplayerList?.find(player => player.player.toLowerCase() === DBplayerList[i].rsn.toLowerCase());
+
+        if (foundPlayer){
+            combinedPlayers.push({
+                playerName: foundPlayer.player,
+                playerClanRank: foundPlayer.clanRank
+            });
+        }
+    }
+    console.log("combined players: ", combinedPlayers);
+    return combinedPlayers;
+}
+
 
 export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR){
     const playerDetails = [];
 
     for (let i=0; i < players.length; i++){
-        const playerName  = players[i].rsn;
+        const playerName  = players[i].playerName;
+        const playerClanRank = players[i].playerClanRank;
         let success = false;
         let attempt = 0;
-
-        console.log("player name inside function: ", playerName);
 
         while (!success && attempt < 10){
             attempt++;
@@ -54,7 +71,7 @@ export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR
 
                 // get player data and add it
                 const playerData = await client.players.getPlayerDetails(playerName);
-                playerDetails.push({ playerName, ...playerData });
+                playerDetails.push({ playerName, playerClanRank, ...playerData });
                 success=true;
             } catch (error) {
                 // catch too many requests error

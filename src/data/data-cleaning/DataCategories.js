@@ -16,29 +16,29 @@ export const skillingSkills = ["cooking", "woodcutting", "fletching", "fishing",
 ];
 
 // boss and raid kc tiers
-export const tier1KC = 0; // 0-50 kc
-export const tier2KC = 50; // 51-500 kc
-export const tier3KC = 500; // 500-1000 kc
-export const tier4KC = 1500; // 1001-2500 kc
-export const tier5KC = 2501; // 2501+ kc
+export const tier1KC = 0; // 0-49 kc
+export const tier2KC = 50; // 50-99 kc
+export const tier3KC = 100; // 100-249 kc
+export const tier4KC = 250; // 250-749 kc
+export const tier5KC = 750; // 750+ kc
 
 // bosses with cmb level 0-300
-export const tier1bosses = ["barrows_chests", "scurrius", "giant_mole", "deranged_archaeologist", "chaos_fanatic", "crazy_archaeologist", "scorpia", "king_black_dragon", "calvarion", "obor", "bryophyta", "amoxliatl", "mimic", "hespori", "grotesque_guardians", "kraken", 
+export const tier1bosses = ["barrows_chests", "scurrius", "giant_mole", "deranged_archaeologist", "chaos_fanatic", "crazy_archaeologist", "obor", "bryophyta", "amoxliatl", "hespori", "kraken", "shellbane_gryphon", "thermonuclear_smoke_devil"
 ];
 
 // bosses with cmb level 301-600
-export const tier2bosses = ["dagannoth_prime", "dagannoth_rex", "dagannoth_supreme", "sarachnis", "lunar_chests", "kalphite_queen", "kreearra", "commander_zilyana", "chaos_elemental", "chaos_elemental", "vetion", "spindel", "venenatis", "artio", "callisto", "the_royal_titans", "doom_of_mokhaiotl", "skotizo", "abyssal_sire", "thermonuclear_smoke_devil", "cerberus", "alchemical_hydra"
+export const tier2bosses = ["dagannoth_prime", "dagannoth_rex", "dagannoth_supreme", "scorpia", "king_black_dragon", "grotesque_guardians", "calvarion", "sarachnis", "the_hueycoatl", "lunar_chests", "chaos_elemental", "chaos_elemental", "mimic", "vetion", "spindel", "venenatis", "artio", "callisto", "the_royal_titans", "skotizo", "abyssal_sire", "cerberus", "alchemical_hydra", "kril_tsutsaroth", "duke_sucellus", "tztok_jad"
 ];
 
 // bosses with cmb level 601-900
-export const tier3bosses = ["general_graardor", "kril_tsutsaroth", "the_hueycoatl", "corporeal_beast", "zulrah", "vorkath", "phantom_muspah", "nightmare", "duke_sucellus", "the_leviathan", "the_whisperer", "vardorvis", "araxxor", "the_gauntlet", "the_corrupted_gauntlet", "tztok_jad"
+export const tier3bosses = ["general_graardor", "kreearra", "kalphite_queen", "commander_zilyana", "corporeal_beast", "zulrah", "vorkath", "phantom_muspah", "araxxor", "the_gauntlet"
 ];
 
 // bosses with cmb level 901-1200
-export const tier4bosses = ["nex", "phosanis_nightmare", "yama"];
+export const tier4bosses = ["nex", "yama", "nightmare", "the_leviathan", "the_whisperer","vardorvis", "the_corrupted_gauntlet"];
 
 // bosses with cmb level 1201+
-export const tier5bosses = ["tzkal_zuk", "sol_heredit"];
+export const tier5bosses = ["tzkal_zuk", "sol_heredit", "phosanis_nightmare", "doom_of_mokhaiotl"];
 
 // all toa raids
 export const toaKC = ["tombs_of_amascut", "tombs_of_amascut_expert"];

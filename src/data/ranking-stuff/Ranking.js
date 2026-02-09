@@ -5,7 +5,7 @@ const bossMultiplier = 2;
 const skillMultiplier = 1.5;
 const efficiencyMultiplier = 1;
 
-// total categories
+// total categories: boss kc, skills, efficiency
 const totalCategories = 3;
 
 // rank tiers
@@ -34,6 +34,7 @@ async function calculateTotalPointValueFromWeights(weightedPlayerData){
         const bossWeights = player.data.bossWeights;
         const skillWeights = player.data.skills;
         const efficiencyWeights = player.data.efficiency;
+        const clanRankWeight = player.clanRank;
 
         // get the sum of each points type
         const totalBossPoints = Object.values(bossWeights).reduce((sum, current) => sum + current, 0);
@@ -42,7 +43,7 @@ async function calculateTotalPointValueFromWeights(weightedPlayerData){
 
         const totalPoints = (totalBossPoints * bossMultiplier) + (totalSkillPoints * skillMultiplier) + (totalEfficiencyPoints * efficiencyMultiplier);
 
-        const totalAveragedPoints = totalPoints / totalCategories;
+        const totalAveragedPoints = (totalPoints / totalCategories) + clanRankWeight;
 
         const decimalPlaces = 3;
         const factor = 10 ** decimalPlaces;
