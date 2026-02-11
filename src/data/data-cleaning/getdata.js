@@ -34,8 +34,8 @@ export async function parseDataFromCSV(groupData, exportFileName, TEMP_DIR){
     return cleanedData;
 }
 
-export async function parseCSVWithDBList(DBplayerList){
-    const CSVplayerList = await readFromFile('outputs', 'parsedcsv');
+export async function parseCSVWithDBList(DBplayerList, eventId){
+    const CSVplayerList = await readFromFile('outputs', `parsedcsv${eventId}`);
     const combinedPlayers = [];
 
     for (let i=0; i<DBplayerList.length; i++){
@@ -48,7 +48,6 @@ export async function parseCSVWithDBList(DBplayerList){
             });
         }
     }
-    console.log("combined players: ", combinedPlayers);
     return combinedPlayers;
 }
 

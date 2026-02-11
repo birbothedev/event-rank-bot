@@ -14,7 +14,6 @@ export async function getUpdatedSignUpCount(eventId) {
 
 export async function getExistingRSN(userId, eventId){
     const existingSignUp = db.prepare(`
-        
         SELECT rsn
         FROM event_signups
         WHERE user_id = ? AND event_id = ?

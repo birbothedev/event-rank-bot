@@ -54,7 +54,6 @@ async function calculateTotalPointValueFromWeights(weightedPlayerData){
             totalPoints: roundedPoints
         });
     }
-    console.log(results);
     return results;
 }   
 
@@ -74,11 +73,25 @@ export async function rankPlayersFromPoints(playerData, exportfilename, TEMP_DIR
         else if (totalPoints > rank1) rank = "Rank 1"; // 0.1 - 10 points
         else rank = "No Rank"; // 0 points
 
-        ranks[playerName] = rank;
+        ranks[playerName] = {
+            rank,
+            totalPoints
+        };
     }
 
-    const rankArray = Object.entries(ranks).map(([playerName, rank]) => ({ playerName, rank }));
-    rankArray.sort((a, b) => rankOrder[b.rank] - rankOrder[a.rank]);
+    const rankArray = Object.entries(ranks).map(([playerName, data]) => ({ 
+        playerName, 
+        rank: data.rank,
+        points: data.totalPoints 
+    }));
+    
+    // sort by rank then by points within each rank
+    rankArray.sort((a, b) => {
+        if (rankOrder[b.rank] !== rankOrder[a.rank]) {
+            return rankOrder[b.rank] - rankOrder[a.rank];
+        }
+        return b.totalPoints - a.totalPoints;
+    });
 
     await writeToFile(rankArray, exportfilename, TEMP_DIR);
     return rankArray;

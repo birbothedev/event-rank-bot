@@ -54,8 +54,6 @@ export async function combineDataAndWriteToFile(rawData, exportfilename, TEMP_DI
         const bossItem = playerBossData.find(b => b.playerName === playerName);
         const efficiencyItem = playerEfficiencyData.find(e => e.playerName === playerName);
 
-        console.log("player clan rank: ", playerClanRank);
-
         return {
             playerName, 
             playerClanRank,
