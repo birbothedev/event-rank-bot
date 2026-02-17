@@ -8,8 +8,7 @@ const welcomeEmbed = new EmbedBuilder()
     .setTitle('OSRS Event Bot Online!')
     .setDescription('Hello everyone! I have just successfully connected to the Discord API.')
     .addFields(
-        { name: 'Admin Only Event Commands', value: 'Use these commands to add or update event information:\n**/addevent**\nUse this command to add an event\n**/closeevent**\nUse this command to close the signups for an event.\n**/openevent**\nUse this command to re-open an existing event for signups.' },
-        { name: 'Admin Only Player Commands', value: 'Use these commands to add or update player information:\n**/deleteplayer**\nUse this command to delete a player from the database.' },
+        { name: 'Admin Only Event Commands', value: 'Use these commands to add or update event information:\n**/addevent**\nUse this command to add an event\n**/openevent**\nUse this command to re-open an existing event for signups.' },
     )
     .setTimestamp()
     .setFooter({ text: 'OSRS Event Bot', iconURL: 'https://twemoji.maxcdn.com/v/latest/72x72/1f525.png' });

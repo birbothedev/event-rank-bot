@@ -92,7 +92,7 @@ export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR
             }
         }
         // 5 seconds between requests
-        await delay(5000);
+        await delay(2000);
     }
 
     await writeToFile(playerDetails, exportFileName, TEMP_DIR);

@@ -1,4 +1,4 @@
-import { EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { db } from '../../database.js';
 import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import { createSignupActionRow } from '../../helpers/EventButtons.js';
@@ -10,7 +10,6 @@ export default {
     data: new SlashCommandBuilder()
         .setName('openevent')
         .setDescription('Re-opens an existing event for signups. Does not remove old signups.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addAttachmentOption(option =>
             option
                 .setName('image')

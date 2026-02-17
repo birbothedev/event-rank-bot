@@ -1,5 +1,4 @@
-import { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder } from "discord.js";
-
+import { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 
 export function createSignUpModal(eventId){
     // create sign up modal
@@ -11,7 +10,7 @@ export function createSignUpModal(eventId){
         .setCustomId('rsninput')
         .setStyle(TextInputStyle.Short)
         .setPlaceholder('RSN of the account you will participate on.')
-        .setMaxLength(20)
+        .setMaxLength(12)
         .setMinLength(1)
         .setRequired(true);
     const signupLabel = new LabelBuilder()
@@ -19,7 +18,22 @@ export function createSignUpModal(eventId){
         .setDescription('Limit 1 account per player.')
         .setTextInputComponent(rsnInput);
 
-    signupModal.addLabelComponents(signupLabel);
+    const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId('timezoneinput')
+    .setPlaceholder('Choose your region')
+    .addOptions(
+        new StringSelectMenuOptionBuilder().setLabel('NA').setValue('na').setEmoji('❤️'),
+        new StringSelectMenuOptionBuilder().setLabel('EU').setValue('eu').setEmoji('💙'),
+        new StringSelectMenuOptionBuilder().setLabel('Asia').setValue('asia').setEmoji('💛'),
+        new StringSelectMenuOptionBuilder().setLabel('LATAM').setValue('latam').setEmoji('💜'),
+        new StringSelectMenuOptionBuilder().setLabel('OCE').setValue('oce').setEmoji('💚')
+    );
+
+    const selectMenuLabel = new LabelBuilder()
+    .setLabel('Select Region')
+    .setStringSelectMenuComponent(selectMenu);
+
+    signupModal.addLabelComponents(signupLabel, selectMenuLabel);
 
     return signupModal;
 }
@@ -34,7 +48,7 @@ export function createChangeAccountModal(eventId) {
         .setCustomId('changersninput')
         .setStyle(TextInputStyle.Short)
         .setPlaceholder('RSN of the account you will participate on.')
-        .setMaxLength(20)
+        .setMaxLength(12)
         .setMinLength(1)
         .setRequired(true);
     const changeaccountLabel = new LabelBuilder()
@@ -42,7 +56,22 @@ export function createChangeAccountModal(eventId) {
         .setDescription('Limit 1 account per player.')
         .setTextInputComponent(changersnInput);
 
-    changeaccountModal.addLabelComponents(changeaccountLabel);
+    const changeaccountselectMenu = new StringSelectMenuBuilder()
+    .setCustomId('changetimezoneinput')
+    .setPlaceholder('Choose your region')
+    .addOptions(
+        new StringSelectMenuOptionBuilder().setLabel('NA').setValue('na').setEmoji('❤️'),
+        new StringSelectMenuOptionBuilder().setLabel('EU').setValue('eu').setEmoji('💙'),
+        new StringSelectMenuOptionBuilder().setLabel('Asia').setValue('asia').setEmoji('💛'),
+        new StringSelectMenuOptionBuilder().setLabel('LATAM').setValue('latam').setEmoji('💜'),
+        new StringSelectMenuOptionBuilder().setLabel('OCE').setValue('oce').setEmoji('💚')
+    );
+
+    const changeaccountselectMenuLabel = new LabelBuilder()
+    .setLabel('Select Region')
+    .setStringSelectMenuComponent(changeaccountselectMenu);
+
+    changeaccountModal.addLabelComponents(changeaccountLabel, changeaccountselectMenuLabel);
 
     return changeaccountModal;
 }

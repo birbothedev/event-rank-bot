@@ -11,6 +11,7 @@ export default {
         const changersnInput = interaction.fields.getTextInputValue('changersninput');
 
         const normalizedRSN = changersnInput.toLowerCase();
+        const timezone = interaction.fields.getStringSelectValues('changetimezoneinput');
 
         // get clan member list from file
         const parsedCSVData = await readFromFile('outputs', `parsedcsv${eventId}`);
@@ -21,7 +22,7 @@ export default {
 
         try {
             if (validatedRSN) {
-                const changes = await updateExistingRSN(userId, eventId, normalizedRSN);
+                const changes = await updateExistingRSN(userId, eventId, normalizedRSN, timezone);
 
                 if (changes === 0) {
                     return await interaction.editReply({

@@ -1,24 +1,25 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
+import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { buildEventSelectMenu } from '../../helpers/EventSelectDropdown.js';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('updateevents')
-        .setDescription('Refresh the list of events from the DB')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setName('addcaptains')
+        .setDescription('Choose Team Captains for the draft.'),
 
     async execute(interaction) {
         await interaction.deferReply({ 
             flags: MessageFlags.Ephemeral
         });
 
+        const eventRow = await buildEventSelectMenu('captains');
+
         try {
-            events = await getUpdatedEventsList();
             await interaction.editReply({
-                content: '✅ Successfully updated events list.',
+                content: 'Please choose an event.',
+                components: [eventRow],
                 flags: MessageFlags.Ephemeral
             });
-            console.log(events);
+
         } catch (error){
             console.error('Error updating events:', error);
             await interaction.editReply({

@@ -30,6 +30,10 @@ db.prepare(`CREATE TABLE IF NOT EXISTS event_signups (
     user_id TEXT NOT NULL,
     username TEXT NOT NULL,
     rsn TEXT NOT NULL,
+    rank,
+    rank_points,
+    captain INTEGER NOT NULL DEFAULT 0 CHECK(captain IN (0,1)),
+    timezone TEXT NOT NULL,
     created_at INTEGER,
     UNIQUE (event_id, user_id),
     FOREIGN KEY (event_id) REFERENCES events(id)

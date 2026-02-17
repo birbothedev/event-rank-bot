@@ -44,6 +44,12 @@ async function getValuePlayerEfficiency(rawData){
 }
 
 export async function combineDataAndWriteToFile(rawData, exportfilename, TEMP_DIR){
+    // 🔥 Remove players without snapshots
+    rawData = rawData.filter(player =>
+        player &&
+        player.latestSnapshot &&
+        player.latestSnapshot.data
+    );
     const playerSkillData = await getValuePerSkill(rawData);
     const playerBossData = await getValuePerBoss(rawData);
     const playerEfficiencyData = await getValuePlayerEfficiency(rawData);

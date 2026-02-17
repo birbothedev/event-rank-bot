@@ -1,25 +1,23 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
-import { buildEventSelectMenu } from '../../helpers/EventSelectDropdown.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('rankallplayers')
-        .setDescription('Runs the rank script on all players. Please only run after sign ups have closed.'),
+        .setName('updateevents')
+        .setDescription('Refresh the list of events from the DB'),
 
     async execute(interaction) {
         await interaction.deferReply({ 
             flags: MessageFlags.Ephemeral
         });
 
-        const eventRow = await buildEventSelectMenu('rank');
-
         try {
+            events = await getUpdatedEventsList();
             await interaction.editReply({
-                content: 'Please choose an event.',
-                components: [eventRow],
+                content: '✅ Successfully updated events list.',
                 flags: MessageFlags.Ephemeral
             });
-
+            console.log(events);
         } catch (error){
             console.error('Error updating events:', error);
             await interaction.editReply({

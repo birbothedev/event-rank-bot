@@ -33,7 +33,6 @@ await rest.put(
 	{ body: commands.map(cmd => cmd.data.toJSON()) }
 );
 
-
 /* -----------------------------
 Register events
 ----------------------------- */

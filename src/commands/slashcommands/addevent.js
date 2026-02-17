@@ -32,17 +32,16 @@ export default {
                 .setName('description')
                 .setDescription('A brief description of the event')
                 .setRequired(false)
-        )
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        ),
 
     async execute(interaction) {
-        const attachment = interaction.options.getAttachment('image'); // get image from slash command
+        const attachment = interaction.options.getAttachment('image'); 
         const title = interaction.options.getString('eventname');
         const description = interaction.options.getString('description');
         const teamsizes = interaction.options.getInteger('teamsizes');
 
         const embedWithStuff = new EmbedBuilder()
-            .setImage(attachment.url) // set the image on the embed
+            .setImage(attachment.url) 
             .setTitle(title)
             .setColor(0x0099ff)
             .setDescription(description)

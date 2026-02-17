@@ -98,9 +98,9 @@ export async function applyWeightsToPlayerBossCount(playerData){
         const t3weights = weighBossesByType(player.tier3bosses, 3);
         const t4weights = weighBossesByType(player.tier4bosses, 4);
         const t5weights = weighBossesByType(player.tier5bosses, 5);
-        const toaWeights = weighBossesByType(player.toaRaids, 6);
-        const tobWeights = weighBossesByType(player.tobRaids, 6);
-        const coxWeights = weighBossesByType(player.coxRaids, 6);
+        const toaWeights = weighBossesByType(player.toaRaids, 3);
+        const tobWeights = weighBossesByType(player.tobRaids, 5);
+        const coxWeights = weighBossesByType(player.coxRaids, 4);
 
         return {
             playerName: player.playerName,

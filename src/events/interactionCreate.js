@@ -3,10 +3,20 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { commands } from '../commands/commands.js';
 import { Events } from 'discord.js';
+import 'dotenv/config';
+
+const ALLOWED_ROLE_ID = process.env.MODERATOR_ROLE_ID;
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction) {
+
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return interaction.reply({
+                content: "❌ You don't have permission to use commands!",
+                ephemeral: true
+            });
+        }
 
         /* -------- SLASH COMMANDS -------- */
         if (interaction.isChatInputCommand()) {

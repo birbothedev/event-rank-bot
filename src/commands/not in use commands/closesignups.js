@@ -5,8 +5,7 @@ import { db } from '../../database.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('closesignups')
-        .setDescription('Closes sign ups and prevents new submissions.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setDescription('Closes sign ups and prevents new submissions.'),
 
     async execute(interaction) {
         await interaction.reply(

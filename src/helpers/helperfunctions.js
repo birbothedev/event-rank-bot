@@ -22,12 +22,12 @@ export async function getExistingRSN(userId, eventId){
     return existingSignUp;
 }
 
-export async function updateExistingRSN(userId, eventId, newrsn) {
+export async function updateExistingRSN(userId, eventId, newrsn, timezone) {
     const row = db.prepare(`
             UPDATE event_signups
-            SET rsn = ?
+            SET rsn = ?, timezone = ?
             WHERE user_id = ? and event_id = ?
-        `).run(newrsn, userId, eventId)
+        `).run(newrsn, timezone, userId, eventId)
 
     // returns number of changes so we can check if any changes were made
     return row.changes;
@@ -66,4 +66,15 @@ export async function getUpdatedEventsList(){
             `).all();
 
 	return getEvents;
+}
+
+export function updatePlayerRankAndPointsInDB(eventId, playerName, playerRank, playerPoints){
+    const row = db.prepare(`
+            UPDATE event_signups
+            SET rank = ?, rank_points = ?
+            WHERE rsn = ? and event_id = ?
+        `).run(playerRank, playerPoints, playerName, eventId);
+
+    // returns number of changes so we can check if any changes were made
+    return row.changes;
 }

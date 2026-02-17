@@ -2,7 +2,7 @@ import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilde
 import { getUpdatedEventsList } from "./helperfunctions.js";
 
 
-export async function buildEventSelectMenu(){
+export async function buildEventSelectMenu(context){
     const events = await getUpdatedEventsList();
 
     const selectOptions = events.map(event => 
@@ -12,7 +12,7 @@ export async function buildEventSelectMenu(){
         );
 
     const selectEvent = new StringSelectMenuBuilder()
-        .setCustomId('selectevent')
+        .setCustomId(`eventselect:${context}`)
         .setPlaceholder('Select an Event')
         .addOptions(selectOptions.slice(0, 25));
 

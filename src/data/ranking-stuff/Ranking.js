@@ -13,8 +13,8 @@ const rank1 = 0;
 const rank2 = 10;
 const rank3 = 20;
 const rank4 = 30;
-const rank5 = 40;
-const rank6 = 50;
+const rank5 = 45;
+const rank6 = 60;
 
 //rank order
 const rankOrder = {
@@ -90,7 +90,7 @@ export async function rankPlayersFromPoints(playerData, exportfilename, TEMP_DIR
         if (rankOrder[b.rank] !== rankOrder[a.rank]) {
             return rankOrder[b.rank] - rankOrder[a.rank];
         }
-        return b.totalPoints - a.totalPoints;
+        return b.points - a.points;
     });
 
     await writeToFile(rankArray, exportfilename, TEMP_DIR);

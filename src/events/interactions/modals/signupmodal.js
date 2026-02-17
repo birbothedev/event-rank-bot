@@ -1,6 +1,6 @@
 import { db } from "../../../database.js";
 import { getExistingRSN, getUpdatedSignUpCount, validateRSN } from "../../../helpers/helperfunctions.js";
-import { MessageFlags, EmbedBuilder } from "discord.js";
+import { MessageFlags, EmbedBuilder, time } from "discord.js";
 import { readFromFile } from "../../../data/data-cleaning/output.js";
 
 export default {
@@ -11,6 +11,7 @@ export default {
         const userId = interaction.user.id;
         const rsnInput = interaction.fields.getTextInputValue('rsninput');
 
+        const timezone = interaction.fields.getStringSelectValues('changetimezoneinput');
         const normalizedRSN = rsnInput.toLowerCase();
 
         // hold reply until it knows if its a dupe submission or not
@@ -28,14 +29,15 @@ export default {
                 // add values to db
                 db.prepare(`
                     INSERT INTO event_signups
-                    (event_id, user_id, username, rsn, created_at)
-                    VALUES (?, ?, ?, ?, ?)
+                    (event_id, user_id, username, rsn, created_at, timezone)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     `).run(
                     eventId,
                     userId,
                     interaction.user.username,
                     normalizedRSN,
-                    Date.now()
+                    Date.now(),
+                    timezone
                 );
 
                 // update sign ups count from database
