@@ -1,6 +1,5 @@
-import { db } from "../../../database.js";
-import { getExistingRSN, getUpdatedSignUpCount, validateRSN } from "../../../helpers/helperfunctions.js";
-import { MessageFlags, EmbedBuilder, time } from "discord.js";
+import { addSignUp, getExistingRSN, getUpdatedSignUpCount, validateRSN } from "../../../helpers/helperfunctions.js";
+import { MessageFlags, EmbedBuilder } from "discord.js";
 import { readFromFile } from "../../../data/data-cleaning/output.js";
 
 export default {
@@ -10,8 +9,8 @@ export default {
         const eventId = interaction.customId.split(':')[1];
         const userId = interaction.user.id;
         const rsnInput = interaction.fields.getTextInputValue('rsninput');
-
-        const timezone = interaction.fields.getStringSelectValues('changetimezoneinput');
+        const timezone = interaction.fields.getStringSelectValues('timezoneinput');
+        const captain = interaction.fields.getStringSelectValues('captaininput');
         const normalizedRSN = rsnInput.toLowerCase();
 
         // hold reply until it knows if its a dupe submission or not
@@ -26,19 +25,7 @@ export default {
             const validatedRSN = await validateRSN(normalizedRSN, parsedCSVData);
 
             if (validatedRSN) {
-                // add values to db
-                db.prepare(`
-                    INSERT INTO event_signups
-                    (event_id, user_id, username, rsn, created_at, timezone)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    `).run(
-                    eventId,
-                    userId,
-                    interaction.user.username,
-                    normalizedRSN,
-                    Date.now(),
-                    timezone
-                );
+                await addSignUp(eventId,userId,interaction.user.username,normalizedRSN,captain,timezone)
 
                 // update sign ups count from database
                 const signupCount = await getUpdatedSignUpCount(eventId);
@@ -58,7 +45,6 @@ export default {
                     content: `❌ Could not find rsn: ${rsnInput}. Please try again.`
                 })
             }
-
             
         } catch (error) {
             console.error("Modal submit error: ", error);

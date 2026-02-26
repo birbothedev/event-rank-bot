@@ -19,7 +19,7 @@ export default {
             }
             await interaction.showModal(createChangeAccountModal(eventId));
         } catch (err) {
-            console.error('Modal error:', err);
+            console.error('Error:', err);
             await interaction.reply({
                 content: '❌ Something went wrong changing your account.',
                 flags: MessageFlags.Ephemeral

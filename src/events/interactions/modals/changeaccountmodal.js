@@ -9,6 +9,7 @@ export default {
         const eventId = interaction.customId.split(':')[1];
         const userId = interaction.user.id;
         const changersnInput = interaction.fields.getTextInputValue('changersninput');
+        const captain = interaction.fields.getStringSelectValues('changecaptaininput');
 
         const normalizedRSN = changersnInput.toLowerCase();
         const timezone = interaction.fields.getStringSelectValues('changetimezoneinput');
@@ -22,7 +23,7 @@ export default {
 
         try {
             if (validatedRSN) {
-                const changes = await updateExistingRSN(userId, eventId, normalizedRSN, timezone);
+                const changes = await updateExistingRSN(userId, eventId, normalizedRSN, captain, timezone);
 
                 if (changes === 0) {
                     return await interaction.editReply({

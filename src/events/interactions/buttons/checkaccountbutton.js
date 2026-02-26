@@ -21,7 +21,7 @@ export default {
                 flags: MessageFlags.Ephemeral
             });
         } catch (err) {
-            console.error('Modal error:', err);
+            console.error('Error:', err);
 
             await interaction.reply({
                 content: '❌ Something went wrong checking your signup.',

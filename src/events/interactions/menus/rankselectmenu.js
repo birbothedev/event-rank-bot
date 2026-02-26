@@ -35,11 +35,22 @@ export default {
 
             // add player ranks to db
             const rankedPlayers = await readFromFile('outputs', `ranked-data${eventId}`);
+            let changes;
             for (const player of rankedPlayers) {
                 const { playerName, rank, points } = player;
                 const normalizedRSN = playerName.toLowerCase();
-                updatePlayerRankAndPointsInDB(eventId, normalizedRSN, rank, points);
+                changes = updatePlayerRankAndPointsInDB(eventId, normalizedRSN, rank, points);
             }
+
+            if (!changes){
+                await interaction.channel.send({ 
+                    content: '❌ Something went wrong while attempting to add ranks to database.',
+                });
+            }
+
+            await interaction.channel.send({ 
+                content: '✅ Successfully added ranks to database.',
+            });
         } catch (error) {
             console.error('Error Ranking Players:', error);
 

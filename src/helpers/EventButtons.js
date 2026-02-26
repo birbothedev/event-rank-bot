@@ -1,4 +1,4 @@
-import { ActionRowBuilder,
+import { ActionRow, ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle
 } from 'discord.js';
@@ -13,7 +13,7 @@ export function createSignupActionRow(eventId){
 
     const changeAccountButton = new ButtonBuilder()
         .setCustomId(`changeAccountButton:${eventId}`)
-        .setLabel('✍️ Change Account')
+        .setLabel('✍️ Change Information')
         .setStyle(ButtonStyle.Secondary)
 
     const checkAccountButton = new ButtonBuilder()

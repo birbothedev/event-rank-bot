@@ -22,12 +22,23 @@ export async function getExistingRSN(userId, eventId){
     return existingSignUp;
 }
 
-export async function updateExistingRSN(userId, eventId, newrsn, timezone) {
+export async function addSignUp(eventId, userId, username, rsn, captain, timezone){
+    const row = db.prepare(`
+                    INSERT INTO event_signups
+                    (event_id, user_id, username, rsn, created_at, captain, timezone)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    `).run(
+                    eventId,userId,username,rsn,Date.now(),captain,timezone
+                );
+    return row.changes;
+}   
+
+export async function updateExistingRSN(userId, eventId, newrsn, captain, timezone) {
     const row = db.prepare(`
             UPDATE event_signups
-            SET rsn = ?, timezone = ?
+            SET rsn = ?, timezone = ?, captain = ?
             WHERE user_id = ? and event_id = ?
-        `).run(newrsn, timezone, userId, eventId)
+        `).run(newrsn, timezone, captain, userId, eventId)
 
     // returns number of changes so we can check if any changes were made
     return row.changes;
@@ -51,7 +62,8 @@ export async function validateRSN(rsn, parsedCSVData){
 
 export async function getPlayerListFromDB(eventId){
     const playerList = db.prepare(`
-            SELECT rsn FROM event_signups
+            SELECT id, rsn, rank, captain, timezone
+            FROM event_signups
             WHERE event_id = ?
         `).all(eventId);
 
@@ -75,6 +87,14 @@ export function updatePlayerRankAndPointsInDB(eventId, playerName, playerRank, p
             WHERE rsn = ? and event_id = ?
         `).run(playerRank, playerPoints, playerName, eventId);
 
-    // returns number of changes so we can check if any changes were made
+    return row.changes;
+}
+
+export async function deleteplayer(eventId, rsn){
+    const row = db.prepare(`
+        DELETE FROM event_signups
+        WHERE event_id = ? and rsn = ?
+    `).run(eventId, rsn);
+
     return row.changes;
 }

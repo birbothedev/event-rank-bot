@@ -21,7 +21,7 @@ export default {
             });
 
         } catch (error){
-            console.error('Error updating events:', error);
+            console.error('Error:', err);
             await interaction.editReply({
                 content: '❌ Something went wrong while attempting to update the events list.',
                 flags: MessageFlags.Ephemeral

@@ -22,7 +22,7 @@ export default {
             // link submission to correct event id
             await interaction.showModal(createSignUpModal(eventId));
         } catch (err) {
-            console.error('Modal error:', err);
+            console.error('Error:', err);
             await interaction.reply({
                 content: '❌ Something went wrong. Please wait a moment and try again',
                 flags: MessageFlags.Ephemeral

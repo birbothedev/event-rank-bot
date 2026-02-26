@@ -11,6 +11,15 @@ export default {
     name: Events.InteractionCreate,
     async execute(interaction) {
 
+        if (interaction.isAutocomplete()) {
+            const command = commands.find(
+                cmd => cmd.data.name === interaction.commandName
+            );
+            if (command?.autocomplete) {
+                return command.autocomplete(interaction);
+            }
+        }
+
         if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
             return interaction.reply({
                 content: "❌ You don't have permission to use commands!",

@@ -3,9 +3,6 @@ import { db } from '../../database.js';
 import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import { createSignupActionRow } from '../../helpers/EventButtons.js';
 
-const events = await getUpdatedEventsList();
-
-// ----------------- RE OPEN EXISTING EVENT --------------------- //
 export default {
     data: new SlashCommandBuilder()
         .setName('openevent')
@@ -21,13 +18,20 @@ export default {
                 .setName('events')
                 .setDescription('Choose an event')
                 .setRequired(true)
-                .addChoices(
-                ...events.map(event => ({
-                    name: event.name,    
-                    value: event.id.toString() 
-                }))
-            )
+                .setAutocomplete(true)
         ),
+
+    async autocomplete(interaction){
+        const eventname = interaction.options.getFocused(true);
+        const eventList = await getUpdatedEventsList();
+
+        const choices = eventList.map(e => ({name: e.name, id: e.id}));
+        const filtered = choices.filter(choice => choice.name.startsWith(eventname.value));
+
+        await interaction.respond(
+            filtered.slice(0, 25).map(choice => ({name: choice.name, value: choice.id.toString()}))
+        );
+    },
 
     async execute(interaction) {
         const selectedEventId = interaction.options.getString('events');
