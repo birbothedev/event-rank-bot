@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, MessageFlags, ChannelType } from 'discord.js';
-import { getPlayerListFromDB, getUpdatedEventsList } from '../../helpers/helperfunctions.js';
+import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import 'dotenv/config';
-import { addCaptainsToDB, areCaptainsAlreadyShuffled, decideCaptainOrder, displayDraftMessages, getCaptainsFromDB } from '../../helpers/drafthelpers.js';
+import { rankOrder, addCaptainsToDB, areCaptainsAlreadyShuffled, decideCaptainOrder, displayDraftMessages, getCaptainsFromDB, getPlayersByRank, getRankOrderIndex, advanceRankIndex, updateDraftedStateForUser, updateRankIndex, assignTeamsToCaptains } from '../../helpers/drafthelpers.js';
 
 // TODO add rank field to start draft command and run it for each individual rank rather than having to loop the command based on when the rank is finished
 export default {
@@ -27,33 +27,26 @@ export default {
     },
 
     async execute(interaction) {
+        await interaction.deferReply({ 
+            flags: MessageFlags.Ephemeral 
+        });
         const eventId = interaction.options.getString('eventid');
         const channel = interaction.channel;
-
+        const messages = await channel.messages.fetch({ limit: 50 });
+        const botMessages = messages.filter(
+            m => m.author.id === interaction.client.user.id );
         // delete old draft messages in case of restart
         if (channel && channel.type === ChannelType.GuildText) {
-            const messages = await channel.messages.fetch({ limit: 50 });
-            const botMessages = messages.filter(
-                m => m.author.id === interaction.client.user.id );
             for (const [id, msg] of botMessages) {
                 await msg.delete().catch(console.error);
             }
         }
 
-        await interaction.deferReply({ 
-            flags: MessageFlags.Ephemeral 
-        });
         try {
             await interaction.editReply({
                 content: '🟢 Displaying players for draft...',
                 flags: MessageFlags.Ephemeral
             });
-
-            // draft messages
-            const rankOrder = ["Rank 6", "Rank 5", "Rank 4", "Rank 3", "Rank 2", "Rank 1"];
-            const players = await getPlayerListFromDB(eventId);
-            await displayDraftMessages(players, rankOrder, 0, eventId, channel);
-
 
             // only shuffle captains if not already shuffled in db
             const shuffledcaptains = await areCaptainsAlreadyShuffled(eventId);
@@ -63,6 +56,27 @@ export default {
                 await addCaptainsToDB(eventId, 1, captainOrder);
             }
 
+            // TODO filter out captains from list of players before starting draft
+
+            // draft messages
+            let rankIndex = await getRankOrderIndex(eventId);
+            let players = await getPlayersByRank(eventId, rankOrder[rankIndex.rank_index]);
+            let attempts = 0;
+
+            while (!players.some(p => p !== undefined && p !== null) && attempts < rankOrder.length) {
+                console.log("attempting to advance rank index");
+                await advanceRankIndex(eventId);
+                rankIndex = await getRankOrderIndex(eventId);
+                players = await getPlayersByRank(eventId, rankOrder[rankIndex.rank_index]);
+                attempts++;
+            }
+
+            if (players.length === 0) {
+                console.log("No players left to draft");
+                return;
+            }
+            await displayDraftMessages(players, eventId, channel);
+
             // display captain order message
             const captainsString = await getCaptainsFromDB(eventId);
             const captainsArray = JSON.parse(captainsString.captains);
@@ -71,6 +85,14 @@ export default {
                 .join(' -> ');
             const captainsText = `**Captain Order: ${styledCaptainsText}**`;
             await channel.send({ content: captainsText });
+
+            // assign team ids to each captain
+            for (const [index, captain] of captainsArray.entries()){
+                const userId = captain.userId;
+                const rsn = captain.rsn;
+
+                await assignTeamsToCaptains(index + 1, userId, rsn, eventId);
+            }
 
         } catch (error){
             console.error('Error:', error);

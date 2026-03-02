@@ -14,13 +14,3 @@ export async function rankAllPlayers(players, eventId){
 
     return rankedPlayers;
 }
-
-// async function testWithWholeClan(){
-//     const playerDetails = await getRawPlayerDataFromList('parsedcsv', `raw-data${5}`, 'outputs');
-//     const combinedData = await combineDataAndWriteToFile(playerDetails, `combined-data${5}`, 'outputs');
-//     const weightedData = await getAllPlayerWeights(combinedData, `weighted-data${5}`, 'outputs');
-
-//     const rankedPlayers = await rankPlayersFromPoints(weightedData, `ranked-data${eventId}`, 'outputs');
-
-//     return rankedPlayers;
-// }

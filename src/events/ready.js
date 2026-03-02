@@ -1,5 +1,6 @@
 import { Events, EmbedBuilder, ChannelType } from "discord.js";
 import 'dotenv/config';
+import { db } from "../database.js";
 
 const CHANNEL_ID = process.env.CHANNEL_ID;
 
@@ -17,7 +18,8 @@ export default {
     name: Events.ClientReady,
     once: true,
     async execute(client){
-        console.log(`Logged in as ${client.user.tag}`)
+        console.log(`Logged in as ${client.user.tag}`);
+        console.log("DB FILE:", db.name);
 
         try {
 		const channel = await client.channels.fetch(CHANNEL_ID);

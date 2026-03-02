@@ -16,3 +16,4 @@ config.json
 # json stuff
 parsedcsv*.json
 *data*.json
+*signups*.json

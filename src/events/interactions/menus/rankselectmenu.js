@@ -24,7 +24,10 @@ export default {
 
             // rank players
             const playerList = await getPlayerListFromDB(eventId);
-            const parsedPlayerList = await parseCSVWithDBList(playerList, eventId)
+            if (playerList.length === 0){
+                console.log("No player list found!");
+            }
+            const parsedPlayerList = await parseCSVWithDBList(playerList, eventId);
             await rankAllPlayers(parsedPlayerList, eventId);
 
             const rankedFilePath = await filePath('outputs', `ranked-data${eventId}`);

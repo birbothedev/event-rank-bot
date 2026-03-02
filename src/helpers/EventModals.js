@@ -90,8 +90,8 @@ export function createChangeAccountModal(eventId) {
     .setCustomId('changecaptaininput')
     .setPlaceholder('Please select your response')
     .addOptions(
-        new StringSelectMenuOptionBuilder().setLabel('Yes, I would like to be a team captain!').setValue('na').setEmoji('✅'),
-        new StringSelectMenuOptionBuilder().setLabel('No, I am not interested in being a team captain.').setValue('eu').setEmoji('❌')
+        new StringSelectMenuOptionBuilder().setLabel('Yes, I would like to be a team captain!').setValue('1').setEmoji('✅'),
+        new StringSelectMenuOptionBuilder().setLabel('No, I am not interested in being a team captain.').setValue('0').setEmoji('❌')
     );
     const changeselectCaptainMenuLabel = new LabelBuilder()
     .setLabel('Would you like to be a Team Captain?')
@@ -102,27 +102,3 @@ export function createChangeAccountModal(eventId) {
 
     return changeaccountModal;
 }
-
-// export function createDeletePlayerModal(eventId){
-//     const changeaccountModal = new ModalBuilder()
-//     .setCustomId(`deleteplayermodal:${eventId}`)
-//     .setTitle('Delete Player');
-    
-//     // change rsn 
-//     const rsnInput = new TextInputBuilder()
-//         .setCustomId('deletersninput')
-//         .setStyle(TextInputStyle.Short)
-//         .setPlaceholder('RSN of the account you wish to remove from the database.')
-//         .setMaxLength(12)
-//         .setMinLength(1)
-//         .setRequired(true)
-//         .setAutoComplete(true);
-//     const changeaccountLabel = new LabelBuilder()
-//         .setLabel("Change Account")
-//         .setDescription('Limit 1 account per player.')
-//         .setTextInputComponent(changersnInput);
-
-//     changeaccountModal.addLabelComponents(changeaccountLabel, changeaccountselectMenuLabel, changeselectCaptainMenuLabel);
-
-//     return changeaccountModal;
-// }

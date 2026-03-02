@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const db = new Database(path.join(__dirname, "../eventsignups-database.sqlite"));
+export const db = new Database(
+    path.resolve(__dirname, "..", "databases", "eventsignups-database.sqlite")
+);
 
 // WAL = write ahead logging, writes go into a separate file and are merged into the DB later (safer and prevents reads from blocking writes)
 db.pragma("journal_mode = WAL");
@@ -32,25 +34,11 @@ db.prepare(`CREATE TABLE IF NOT EXISTS event_signups (
     rsn TEXT NOT NULL,
     rank,
     rank_points,
-    captain INTEGER NOT NULL DEFAULT 0 CHECK(captain IN (0,1)),
+    captain INTEGER NOT NULL DEFAULT 0,
     timezone TEXT NOT NULL,
     created_at INTEGER,
-    UNIQUE (event_id, user_id),
-    FOREIGN KEY (event_id) REFERENCES events(id)
-    )
-`).run();
-
-//table to store all teams
-db.prepare(`CREATE TABLE IF NOT EXISTS event_teams (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_id INTEGER NOT NULL,
-    user_id TEXT NOT NULL,
-    username TEXT NOT NULL,
-    rsn TEXT NOT NULL,
-    rank,
-    rank_points,
-    drafted_by_username TEXT NOT NULL,
-    captain INTEGER NOT NULL DEFAULT 0 CHECK(captain IN (0,1)),
+    is_drafted INTEGER NOT NULL DEFAULT 0,
+    team_id INTEGER NOT NULL DEFAULT 0,
     UNIQUE (event_id, user_id),
     FOREIGN KEY (event_id) REFERENCES events(id)
     )
@@ -61,8 +49,9 @@ db.prepare(`CREATE TABLE IF NOT EXISTS draft_state (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     event_id INTEGER NOT NULL,
     captains TEXT NOT NULL,
-    shuffled INTEGER NOT NULL DEFAULT 0 CHECK(shuffled IN (0,1)),
+    shuffled INTEGER NOT NULL DEFAULT 0,
     turn_index INTEGER NOT NULL DEFAULT 0,
+    rank_index INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (event_id) REFERENCES events(id)
     )
 `).run();

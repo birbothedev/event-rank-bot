@@ -1,9 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
+import { pathToFileURL, fileURLToPath } from 'url';
 import { commands } from '../commands/commands.js';
-import { Events } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import 'dotenv/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ALLOWED_ROLE_ID = process.env.MODERATOR_ROLE_ID;
 
@@ -20,24 +23,7 @@ export default {
             }
         }
 
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
-            return interaction.reply({
-                content: "❌ You don't have permission to use commands!",
-                ephemeral: true
-            });
-        }
-
-        /* -------- SLASH COMMANDS -------- */
-        if (interaction.isChatInputCommand()) {
-            const command = commands.find(
-                cmd => cmd.data.name === interaction.commandName
-            );
-
-            if (!command) return;
-            return command.execute(interaction);
-        }
-
-        /* -------- BUTTONS -------- */
+                /* -------- BUTTONS -------- */
         if (interaction.isButton()) {
             const handlers = await loadHandlers('buttons');
             const handler = handlers.find(
@@ -66,14 +52,37 @@ export default {
 
             if (handler) return handler.execute(interaction);
         }
+
+        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            return interaction.reply({
+                content: "❌ You don't have permission to use commands!",
+                flags: MessageFlags.Ephemeral
+            });
+        }
+
+        /* -------- SLASH COMMANDS -------- */
+        if (interaction.isChatInputCommand()) {
+            const command = commands.find(
+                cmd => cmd.data.name === interaction.commandName
+            );
+
+            if (!command) return;
+            return command.execute(interaction);
+        }
     }
 };
 
 /* -------- helper -------- */
 
 async function loadHandlers(folder) {
-    const folderPath = path.join('./events/interactions', folder);
-    const files = fs.readdirSync(folderPath);
+    const folderPath = path.join(__dirname, 'interactions', folder);
+
+    if (!fs.existsSync(folderPath)) {
+        console.warn(`⚠️ Handler folder missing: ${folderPath}`);
+        return [];
+    }
+
+    const files = fs.readdirSync(folderPath).filter(f => f.endsWith('.js'));
 
     return Promise.all(
         files.map(async file => {

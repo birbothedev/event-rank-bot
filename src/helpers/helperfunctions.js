@@ -2,8 +2,7 @@ import { db } from '../database.js';
 import { getGroupRSN_ToCSV, parseDataFromCSV } from '../data/data-cleaning/getdata.js';
 
 export async function getUpdatedSignUpCount(eventId) {
-	const getSignUpCount = 
-		db.prepare(`
+	const getSignUpCount = db.prepare(`
                 SELECT COUNT(rsn) AS count
                 FROM event_signups
                 WHERE event_id = ?
@@ -24,12 +23,12 @@ export async function getExistingRSN(userId, eventId){
 
 export async function addSignUp(eventId, userId, username, rsn, captain, timezone){
     const row = db.prepare(`
-                    INSERT INTO event_signups
-                    (event_id, user_id, username, rsn, created_at, captain, timezone)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    `).run(
-                    eventId,userId,username,rsn,Date.now(),captain,timezone
-                );
+            INSERT INTO event_signups
+            (event_id, user_id, username, rsn, created_at, captain, timezone)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(
+            eventId,userId,username,rsn,Date.now(),captain,timezone
+        );
     return row.changes;
 }   
 
@@ -62,11 +61,12 @@ export async function validateRSN(rsn, parsedCSVData){
 
 export async function getPlayerListFromDB(eventId){
     const playerList = db.prepare(`
-            SELECT id, rsn, rank, captain, timezone
+            SELECT id, rsn, rank, captain, timezone, is_drafted, team_id
             FROM event_signups
             WHERE event_id = ?
         `).all(eventId);
 
+    console.log("player list in command: ", playerList);
     return playerList;
 }
 
@@ -97,4 +97,14 @@ export async function deleteplayer(eventId, rsn){
     `).run(eventId, rsn);
 
     return row.changes;
+}
+
+export async function getAllCurrentSignups(eventId){
+    const signups = db.prepare(`
+        SELECT rsn, captain, timezone
+        FROM event_signups
+        WHERE event_id = ?
+        `).all(eventId);
+
+    return signups;
 }

@@ -5,6 +5,7 @@ import {
 	Routes,
 } from 'discord.js';
 import 'dotenv/config';
+import dotenv from 'dotenv';
 import { commands } from './commands/commands.js';
 import { readdirSync } from 'fs';
 import { pathToFileURL } from 'url';
@@ -15,12 +16,21 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// sanity check
+if (!process.env.DISCORD_TOKEN) {
+    throw new Error('DISCORD_TOKEN not found! Make sure .env exists in the same folder as index.js');
+}
+
 const token = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
 const client = new Client({
-	intents: [GatewayIntentBits.Guilds]
+	intents: [
+		GatewayIntentBits.Guilds
+	]
 });
 
 /* -----------------------------

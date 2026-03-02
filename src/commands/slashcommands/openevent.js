@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder, ChannelType } from 'discord.js';
 import { db } from '../../database.js';
 import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import { createSignupActionRow } from '../../helpers/EventButtons.js';
@@ -36,6 +36,17 @@ export default {
     async execute(interaction) {
         const selectedEventId = interaction.options.getString('events');
         const attachment = interaction.options.getAttachment('image');
+
+        // delete old embed
+        const channel = interaction.channel;
+        const messages = await channel.messages.fetch({ limit: 50 });
+        const botMessages = messages.filter(
+            m => m.author.id === interaction.client.user.id );
+        if (channel && channel.type === ChannelType.GuildText) {
+            for (const [id, msg] of botMessages) {
+                await msg.delete().catch(console.error);
+            }
+        }
 
         const event = db.prepare(`
             SELECT name, description, team_size, 

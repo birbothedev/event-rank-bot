@@ -1,5 +1,16 @@
 import { db } from "../database.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { getPlayerListFromDB } from "./helperfunctions.js";
+
+export const rankOrder = ["Rank 6", "Rank 5", "Rank 4", "Rank 3", "Rank 2", "Rank 1"];
+
+export function ensureAlwaysArray(array){
+    if (!Array.isArray(array)) {
+        array = [array];
+    }
+
+    return array;
+}
 
 // Fisher-Yates shuffle method 
 function shuffle(array){
@@ -22,10 +33,11 @@ export async function decideCaptainOrder(eventId){
             WHERE event_id = ? and captain = 1
         `).all(eventId);
 
-    for (const captain of captains){
+    for (const [index, captain] of captains.entries()){
         captainsArray.push({
             userId: captain.user_id,
-            rsn: captain.rsn
+            rsn: captain.rsn,
+            teamId: index + 1,
         });
     }
 
@@ -96,13 +108,10 @@ export async function advanceDraftTurn(eventId, captainsArray){
     return row.changes;
 }
 
-export async function displayDraftMessages(players, rankOrder, rankIndex, eventId, channel) {
-    if (rankIndex >= rankOrder.length) return;
-
-    const currentRank = rankOrder[rankIndex];
-    const playersWithRank = players.filter(player => player.rank === currentRank);
-
-    for (const player of playersWithRank) {
+export async function displayDraftMessages(players, eventId, channel) {
+    ensureAlwaysArray(players);
+    
+    for (const player of players) {
         const message = `**RSN:** ${player.rsn}\n**Rank:** ${player.rank}\n**Region:** ${player.timezone.toUpperCase()}`;
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -116,4 +125,75 @@ export async function displayDraftMessages(players, rankOrder, rankIndex, eventI
             components: [row]
         });
     }
+}
+
+export async function getPlayersByRank(eventId, rankIndex){
+    const playerList = await getPlayerListFromDB(eventId);
+
+    let playersInRank = playerList.filter(player => player.rank === rankIndex);
+    ensureAlwaysArray(playersInRank);
+
+    return playersInRank;
+}
+
+export async function getRankOrderIndex(eventId){
+    const rankIndex = db.prepare(`
+        SELECT rank_index FROM draft_state
+        WHERE event_id = ?
+        `).get(eventId);
+    return rankIndex;
+}
+
+export async function advanceRankIndex(eventId){
+    const rankIndex = await getRankOrderIndex(eventId);
+
+    const nextIndex = rankIndex.rank_index + 1;
+    const updated = db.prepare(`
+        UPDATE draft_state
+        SET rank_index = ?
+        WHERE event_id = ?
+    `).run(nextIndex, eventId);
+
+    return updated.changes;
+}
+
+export async function updateDraftedStateForUser(isDrafted, playerId, eventId) {
+    const row = db.prepare(`
+            UPDATE event_signups
+            SET is_drafted = ?
+            WHERE id = ? and event_id = ?
+        `).run(isDrafted, playerId, eventId)
+
+    // returns number of changes so we can check if any changes were made
+    return row.changes;
+}
+
+export async function updateRankIndex(rankIndex, eventId) {
+    const row = db.prepare(`
+            UPDATE draft_state
+            SET rank_index = ?
+            WHERE event_id = ?
+        `).run(rankIndex, eventId)
+
+    // returns number of changes so we can check if any changes were made
+    return row.changes;
+}
+
+
+export async function recruitPlayerToTeam(teamId, playerId, eventId){
+    const player = db.prepare(`
+        UPDATE event_signups 
+        SET team_id = ?
+        WHERE id = ? and event_id = ?
+        `).run(teamId, playerId, eventId);
+    return player.changes;
+}
+
+export async function assignTeamsToCaptains(teamId, userId, rsn, eventId){
+    const captain = db.prepare(`
+        UPDATE event_signups 
+        SET team_id = ?
+        WHERE user_id = ? and rsn = ? and event_id = ? 
+        `).run(teamId, userId, rsn, eventId);
+    return captain.changes;
 }

@@ -16,10 +16,7 @@ export default {
         // hold reply until it knows if its a dupe submission or not
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-        try {
-            // TODO only emerald+ ranks can sign up
-            // TODO bot auto assigns event participant role after accepting sign up
-            
+        try {      
             // get clan member list from file
             const parsedCSVData = await readFromFile('outputs', `parsedcsv${eventId}`);
             const validatedRSN = await validateRSN(normalizedRSN, parsedCSVData);
