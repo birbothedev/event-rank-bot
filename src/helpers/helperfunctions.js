@@ -44,17 +44,16 @@ export async function updateExistingRSN(userId, eventId, newrsn, captain, timezo
 }
 
 export async function validateRSN(rsn, parsedCSVData){
-    const foundRSN = parsedCSVData?.find(player => player.player.toLowerCase() === rsn);
+    let foundRSN = parsedCSVData?.find(player => player.player.trim().toLowerCase() === rsn);
 
-    if (!foundRSN){
-
+    // refresh player list from wom
+    if (!foundRSN) {
         console.log("could not find name, refreshing data");
-        // refresh clan player list csv
-        const groupCSV = await getGroupRSN_ToCSV(9403);
-        const parsedData = await parseDataFromCSV(groupCSV, 'parsedcsv', 'outputs');
 
-        // search for player again
-        return parsedData.find(player => player.player === rsn);
+        const groupCSV = await getGroupRSN_ToCSV(9403);
+        const freshParsedData = await parseDataFromCSV(groupCSV);
+
+        foundRSN = freshParsedData.find(player => player.player.trim().toLowerCase() === rsn);
     }
     return foundRSN ?? null;
 }
@@ -66,7 +65,6 @@ export async function getPlayerListFromDB(eventId){
             WHERE event_id = ?
         `).all(eventId);
 
-    console.log("player list in command: ", playerList);
     return playerList;
 }
 

@@ -31,7 +31,7 @@ async function applyWeightsToPlayerClanRank(playerData){
     return weightedRank;
 }
 
-export async function getAllPlayerWeights(playerData, exportfilename, TEMP_DIR){
+export async function getAllPlayerWeights(playerData){
     const bossweights = await applyWeightsToPlayerBossCount(playerData);
     const efficiencyweights = await applyWeightsToPlayerEfficiency(playerData);
     const skillweights = await applyWeightsToPlayerSkills(playerData);
@@ -68,7 +68,5 @@ export async function getAllPlayerWeights(playerData, exportfilename, TEMP_DIR){
         }
         };
     });
-
-    await writeToFile(allWeightsMerged, exportfilename, TEMP_DIR);
     return allWeightsMerged;
 }

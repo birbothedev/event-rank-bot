@@ -8,7 +8,6 @@ export function ensureAlwaysArray(array){
     if (!Array.isArray(array)) {
         array = [array];
     }
-
     return array;
 }
 
@@ -129,8 +128,10 @@ export async function displayDraftMessages(players, eventId, channel) {
 
 export async function getPlayersByRank(eventId, rankIndex){
     const playerList = await getPlayerListFromDB(eventId);
+    const playerListWithoutCaptains = playerList.filter(player => player.captain === 0);
+    const getNonDraftedPlayers = playerListWithoutCaptains.filter(player => player.is_drafted === 0);
 
-    let playersInRank = playerList.filter(player => player.rank === rankIndex);
+    let playersInRank = getNonDraftedPlayers.filter(player => player.rank === rankIndex);
     ensureAlwaysArray(playersInRank);
 
     return playersInRank;
@@ -164,7 +165,6 @@ export async function updateDraftedStateForUser(isDrafted, playerId, eventId) {
             WHERE id = ? and event_id = ?
         `).run(isDrafted, playerId, eventId)
 
-    // returns number of changes so we can check if any changes were made
     return row.changes;
 }
 
@@ -175,12 +175,11 @@ export async function updateRankIndex(rankIndex, eventId) {
             WHERE event_id = ?
         `).run(rankIndex, eventId)
 
-    // returns number of changes so we can check if any changes were made
     return row.changes;
 }
 
-
 export async function recruitPlayerToTeam(teamId, playerId, eventId){
+    await updateDraftedStateForUser(1, playerId, eventId);
     const player = db.prepare(`
         UPDATE event_signups 
         SET team_id = ?
@@ -196,4 +195,13 @@ export async function assignTeamsToCaptains(teamId, userId, rsn, eventId){
         WHERE user_id = ? and rsn = ? and event_id = ? 
         `).run(teamId, userId, rsn, eventId);
     return captain.changes;
+}
+
+export async function getCaptainTeamId(userId, eventId){
+    const team = db.prepare(`
+        SELECT team_id FROM event_signups
+        WHERE user_id = ? and event_id = ?
+        `).get(userId, eventId);
+    
+    return team;
 }

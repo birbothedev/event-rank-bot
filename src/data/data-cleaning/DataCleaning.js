@@ -43,8 +43,7 @@ async function getValuePlayerEfficiency(rawData){
     return playerEfficiencyData;
 }
 
-export async function combineDataAndWriteToFile(rawData, exportfilename, TEMP_DIR){
-    // 🔥 Remove players without snapshots
+export async function combineDataAndWriteToFile(rawData){
     rawData = rawData.filter(player =>
         player &&
         player.latestSnapshot &&
@@ -70,8 +69,5 @@ export async function combineDataAndWriteToFile(rawData, exportfilename, TEMP_DI
             }
         }
     });
-
-    // TODO delete raw data file after use
-    await writeToFile(allDataMerged, exportfilename, TEMP_DIR);
     return allDataMerged;
 }

@@ -8,7 +8,7 @@ export async function getGroupRSN_ToCSV(groupNumber){
     return group;
 }
 
-export async function parseDataFromCSV(groupData, exportFileName, TEMP_DIR){
+export async function parseDataFromCSV(groupData){
     const parsedData = await new Promise((res, rej) => {
         const rows = [];
 
@@ -29,13 +29,11 @@ export async function parseDataFromCSV(groupData, exportFileName, TEMP_DIR){
         }
     });
 
-    writeToFile(cleanedData, exportFileName, TEMP_DIR);
-
     return cleanedData;
 }
 
-export async function parseCSVWithDBList(DBplayerList, eventId){
-    const CSVplayerList = await readFromFile('outputs', `parsedcsv${eventId}`);
+export async function parseCSVWithDBList(DBplayerList, groupData){
+    const CSVplayerList = await parseDataFromCSV(groupData)
     const combinedPlayers = [];
 
     for (let i=0; i<DBplayerList.length; i++){
@@ -52,7 +50,7 @@ export async function parseCSVWithDBList(DBplayerList, eventId){
 }
 
 
-export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR){
+export async function getRawPlayerDataFromList(players){
     const playerDetails = [];
 
     for (let i=0; i < players.length; i++){
@@ -94,9 +92,6 @@ export async function getRawPlayerDataFromList(players, exportFileName, TEMP_DIR
         // 5 seconds between requests
         await delay(2000);
     }
-
-    await writeToFile(playerDetails, exportFileName, TEMP_DIR);
-    console.log(`fetched gains for ${playerDetails.length} players. data saved to ${TEMP_DIR}/${exportFileName}`);
-
+    console.log(`fetched gains for ${playerDetails.length} players.`);
     return playerDetails;
 }

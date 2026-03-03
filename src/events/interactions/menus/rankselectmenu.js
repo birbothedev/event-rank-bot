@@ -1,7 +1,7 @@
 import { MessageFlags, AttachmentBuilder } from "discord.js";
 import { getPlayerListFromDB, updatePlayerRankAndPointsInDB } from "../../../helpers/helperfunctions.js";
 import { rankAllPlayers } from "../../../data/main.js";
-import { parseCSVWithDBList } from "../../../data/data-cleaning/getdata.js";
+import { getGroupRSN_ToCSV, parseCSVWithDBList } from "../../../data/data-cleaning/getdata.js";
 import { db } from "../../../database.js";
 import { filePath, readFromFile } from "../../../data/data-cleaning/output.js";
 
@@ -23,11 +23,12 @@ export default {
             });
 
             // rank players
+            const groupData = await getGroupRSN_ToCSV(9403);
             const playerList = await getPlayerListFromDB(eventId);
             if (playerList.length === 0){
                 console.log("No player list found!");
             }
-            const parsedPlayerList = await parseCSVWithDBList(playerList, eventId);
+            const parsedPlayerList = await parseCSVWithDBList(playerList, groupData);
             await rankAllPlayers(parsedPlayerList, eventId);
 
             const rankedFilePath = await filePath('outputs', `ranked-data${eventId}`);

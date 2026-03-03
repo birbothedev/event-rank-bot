@@ -53,15 +53,14 @@ export default {
             if (handler) return handler.execute(interaction);
         }
 
-        if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
-            return interaction.reply({
-                content: "❌ You don't have permission to use commands!",
-                flags: MessageFlags.Ephemeral
-            });
-        }
-
         /* -------- SLASH COMMANDS -------- */
         if (interaction.isChatInputCommand()) {
+            if (!interaction.member.roles.cache.has(ALLOWED_ROLE_ID)) {
+                return interaction.reply({
+                    content: "❌ You don't have permission to use commands!",
+                    flags: MessageFlags.Ephemeral
+                });
+            }
             const command = commands.find(
                 cmd => cmd.data.name === interaction.commandName
             );

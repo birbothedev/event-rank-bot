@@ -1,6 +1,6 @@
 import { MessageFlags } from "discord.js";
 import 'dotenv/config';
-import { rankOrder, advanceRankIndex, getPlayersByRank, getRankOrderIndex, updateDraftedStateForUser, displayDraftMessages } from "../../../helpers/drafthelpers.js";
+import { rankOrder, advanceRankIndex, getPlayersByRank, getRankOrderIndex, updateDraftedStateForUser, displayDraftMessages, recruitPlayerToTeam, getCaptainTeamId } from "../../../helpers/drafthelpers.js";
 
 export default {
     customId: 'recruitbutton:', 
@@ -11,23 +11,23 @@ export default {
         const userId = interaction.user.id;
         const CAPTAIN_ROLE_ID = process.env.CAPTAIN_ROLE_ID;
 
-        // // ensure only team captains can click recruit buttons
-        // const member = interaction.guild.members.cache.get(interaction.user.id);
-        // if (!member.roles.cache.has(CAPTAIN_ROLE_ID)) {
-        //     return interaction.reply({
-        //         content: "❌ You do not have permission to use this button.",
-        //         flags: MessageFlags.Ephemeral
-        //     });
-        // }
-        // // ensure captains can only interact with buttons on their turn
-        // const draft = await getDraftState(eventId);
-        // const currentTurn = draft.captains[draft.turn_index || 0];
-        // if (userId !== currentTurn.userId){
-        //     return interaction.reply({
-        //         content: "❌ Nice try. Please wait your turn.",
-        //         flags: MessageFlags.Ephemeral
-        //     });
-        // }
+        // ensure only team captains can click recruit buttons
+        const member = interaction.guild.members.cache.get(interaction.user.id);
+        if (!member.roles.cache.has(CAPTAIN_ROLE_ID)) {
+            return interaction.reply({
+                content: "❌ You do not have permission to use this button.",
+                flags: MessageFlags.Ephemeral
+            });
+        }
+        // ensure captains can only interact with buttons on their turn
+        const draft = await getDraftState(eventId);
+        const currentTurn = draft.captains[draft.turn_index || 0];
+        if (userId !== currentTurn.userId){
+            return interaction.reply({
+                content: "❌ Nice try. Please wait your turn.",
+                flags: MessageFlags.Ephemeral
+            });
+        }
 
         try {
             // delete the message and button once its clicked
@@ -37,11 +37,13 @@ export default {
 
             // update draft state for recruited player and assign team id
             await updateDraftedStateForUser(1, playerId, eventId);
+            const teamId = await getCaptainTeamId(userId, eventId);
+            console.log(teamId);
+            await recruitPlayerToTeam(teamId.team_id, playerId, eventId);
             
 
             // update draft messages with button click listener
             let rankIndex = await getRankOrderIndex(eventId);
-            // TODO filter out captains from list of players before starting draft
             let players = await getPlayersByRank(eventId, rankOrder[rankIndex.rank_index]);
             // check if all players have been drafted
             const allDrafted = players.every(p => p.is_drafted === 1);

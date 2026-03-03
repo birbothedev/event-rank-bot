@@ -57,10 +57,7 @@ export default {
             VALUES (?, ?, ?, ?, ?)
         `).run(title, description, attachment.url, teamsizes, Date.now());
 
-        const eventId = result.lastInsertRowid;
-
-        const groupCSV = await getGroupRSN_ToCSV(9403);
-        const parsedData = await parseDataFromCSV(groupCSV, `parsedcsv${eventId}`, 'outputs');
+        console.log("Events added: ", result);
 
         await interaction.reply({ 
             embeds: [embedWithStuff],

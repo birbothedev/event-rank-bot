@@ -1,6 +1,6 @@
 import { updateExistingRSN, validateRSN } from "../../../helpers/helperfunctions.js";
 import { MessageFlags } from "discord.js";
-import { readFromFile } from "../../../data/data-cleaning/output.js";
+import { getGroupRSN_ToCSV, parseDataFromCSV } from "../../../data/data-cleaning/getdata.js";
 
 export default {
     customId: 'changeaccountmodal:', 
@@ -10,12 +10,12 @@ export default {
         const userId = interaction.user.id;
         const changersnInput = interaction.fields.getTextInputValue('changersninput');
         const captain = interaction.fields.getStringSelectValues('changecaptaininput');
-
-        const normalizedRSN = changersnInput.toLowerCase();
         const timezone = interaction.fields.getStringSelectValues('changetimezoneinput');
+        const normalizedRSN = changersnInput.trim().toLowerCase();
 
-        // get clan member list from file
-        const parsedCSVData = await readFromFile('outputs', `parsedcsv${eventId}`);
+        // get clan member list 
+        const getGroup = await getGroupRSN_ToCSV(9403);
+        const parsedCSVData = await parseDataFromCSV(getGroup);
         const validatedRSN = await validateRSN(normalizedRSN, parsedCSVData);
 
         // hold reply
