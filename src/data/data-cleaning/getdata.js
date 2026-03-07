@@ -1,7 +1,7 @@
 import { client } from "../womclient.js";
 import csv from "csv-parser";
 import { Readable } from 'stream';
-import { writeToFile, delay, readFromFile } from "./output.js";
+import { delay } from "./output.js";
 
 export async function getGroupRSN_ToCSV(groupNumber){
     const group = await client.groups.getMembersCSV(groupNumber);

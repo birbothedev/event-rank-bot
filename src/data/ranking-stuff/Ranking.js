@@ -57,7 +57,7 @@ async function calculateTotalPointValueFromWeights(weightedPlayerData){
     return results;
 }   
 
-export async function rankPlayersFromPoints(playerData, exportfilename, TEMP_DIR){
+export async function rankPlayersFromPoints(playerData){
     const playerPoints = await calculateTotalPointValueFromWeights(playerData);
     const ranks = {};
 
@@ -92,7 +92,5 @@ export async function rankPlayersFromPoints(playerData, exportfilename, TEMP_DIR
         }
         return b.points - a.points;
     });
-
-    await writeToFile(rankArray, exportfilename, TEMP_DIR);
     return rankArray;
 }

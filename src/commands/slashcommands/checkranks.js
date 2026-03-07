@@ -1,17 +1,18 @@
-import { SlashCommandBuilder, MessageFlags, AttachmentBuilder } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, AttachmentBuilder, EmbedBuilder } from 'discord.js';
 import { getAllCurrentSignups, getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import 'dotenv/config';
 import { filePath, writeToFile } from '../../data/data-cleaning/output.js';
+import { getGroupRSN_ToCSV, parseCSVWithDBList, parseDataFromCSV } from '../../data/data-cleaning/getdata.js';
 
 // TODO add rank field to start draft command and run it for each individual rank rather than having to loop the command based on when the rank is finished
 export default {
     data: new SlashCommandBuilder()
-        .setName('exportsignups')
-        .setDescription('Exports a JSON of all event signups.')
+        .setName('checkranks')
+        .setDescription('Returns a list of any Achievers currently signed up for the event.')
         .addStringOption(option => 
             option
                 .setName('eventid')
-                .setDescription(`The event that the draft will take place for.`)
+                .setDescription(`The event that the search will take place for.`)
                 .setRequired(true)
                 .setAutocomplete(true)
         ),
@@ -30,31 +31,35 @@ export default {
         const eventId = interaction.options.getString('eventid');
 
         await interaction.deferReply({ 
-            flags: MessageFlags.Ephemeral
+            
         });
 
         try {
+            const groupData = await getGroupRSN_ToCSV(9403);
             const allSignups = await getAllCurrentSignups(eventId);
-            
-            let signupsArray = allSignups.map(p => ({
-                rsn: p.rsn,
-                region: p.timezone.toUpperCase(),
-                captain: p.captain === 1 ? "yes" : "no",
-                rank: p.rank ?? "Not ranked yet.",
-                rankPoints: p.rank_points ?? "Not ranked yet."
-            }));
 
-            await writeToFile(signupsArray, `exported-signups${eventId}`, 'outputs');
+            const signupData = await parseCSVWithDBList(allSignups, groupData);
+            const players = signupData.filter(player => player.playerClanRank === "achiever")
 
-            const exportPath = await filePath('outputs', `exported-signups${eventId}`);
-            const fileToReturn = new AttachmentBuilder(exportPath);
+            if (players.length === 0){
+                await interaction.editReply({
+                    content: '✅ No Achievers currently signed up for the event.'
+                });
+                return;
+            }
+
+            const achieverEmbed = new EmbedBuilder()
+                .setTitle(`Players in **Achiever** rank:`)
+                .setColor(0x0099ff)
+                .addFields(
+                    ...players.map(player => ({
+                        name: player.playerName,
+                        value: player.playerClanRank
+                    }))
+                )
 
             await interaction.editReply({
-                content: '✅ Successfully exported signups from the db.',
-                flags: MessageFlags.Ephemeral
-            });
-            await interaction.channel.send({ 
-                files: [fileToReturn] 
+                embeds: [achieverEmbed]
             });
 
         } catch (error){

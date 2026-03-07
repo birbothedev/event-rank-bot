@@ -2,11 +2,10 @@ import { SlashCommandBuilder, MessageFlags, ChannelType } from 'discord.js';
 import { getUpdatedEventsList } from '../../helpers/helperfunctions.js';
 import 'dotenv/config';
 
-// TODO add rank field to start draft command and run it for each individual rank rather than having to loop the command based on when the rank is finished
 export default {
     data: new SlashCommandBuilder()
         .setName('exportteams')
-        .setDescription('Starts the Team Draft.')
+        .setDescription('Exports a JSON of all event teams.')
         .addStringOption(option => 
             option
                 .setName('eventid')

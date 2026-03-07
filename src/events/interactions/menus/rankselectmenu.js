@@ -29,23 +29,15 @@ export default {
                 console.log("No player list found!");
             }
             const parsedPlayerList = await parseCSVWithDBList(playerList, groupData);
-            await rankAllPlayers(parsedPlayerList, eventId);
-
-            const rankedFilePath = await filePath('outputs', `ranked-data${eventId}`);
-            const fileToReturn = new AttachmentBuilder(rankedFilePath);
-            await interaction.channel.send({ 
-                content: '✅ Successfully ranked players. Adding ranks to database...',
-                files: [fileToReturn] });
+            const rankedPlayersList = await rankAllPlayers(parsedPlayerList, eventId);
 
             // add player ranks to db
-            const rankedPlayers = await readFromFile('outputs', `ranked-data${eventId}`);
             let changes;
-            for (const player of rankedPlayers) {
+            for (const player of rankedPlayersList) {
                 const { playerName, rank, points } = player;
                 const normalizedRSN = playerName.toLowerCase();
-                changes = updatePlayerRankAndPointsInDB(eventId, normalizedRSN, rank, points);
+                changes = await updatePlayerRankAndPointsInDB(eventId, normalizedRSN, rank, points);
             }
-
             if (!changes){
                 await interaction.channel.send({ 
                     content: '❌ Something went wrong while attempting to add ranks to database.',

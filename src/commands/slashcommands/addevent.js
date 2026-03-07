@@ -1,5 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
-import { getGroupRSN_ToCSV, parseDataFromCSV } from '../../data/data-cleaning/getdata.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { createSignupActionRow } from '../../helpers/EventButtons.js';
 import { db } from '../../database.js';
 
@@ -57,13 +56,12 @@ export default {
             VALUES (?, ?, ?, ?, ?)
         `).run(title, description, attachment.url, teamsizes, Date.now());
 
+        const eventId = result.lastInsertRowid;
         console.log("Events added: ", result);
 
         await interaction.reply({ 
             embeds: [embedWithStuff],
             components: [createSignupActionRow(eventId)] }
         );
-
-        return parsedData;
     }
 }

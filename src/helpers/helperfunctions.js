@@ -78,7 +78,7 @@ export async function getUpdatedEventsList(){
 	return getEvents;
 }
 
-export function updatePlayerRankAndPointsInDB(eventId, playerName, playerRank, playerPoints){
+export async function updatePlayerRankAndPointsInDB(eventId, playerName, playerRank, playerPoints){
     const row = db.prepare(`
             UPDATE event_signups
             SET rank = ?, rank_points = ?
@@ -99,7 +99,7 @@ export async function deleteplayer(eventId, rsn){
 
 export async function getAllCurrentSignups(eventId){
     const signups = db.prepare(`
-        SELECT rsn, captain, timezone
+        SELECT rsn, captain, timezone, rank, rank_points
         FROM event_signups
         WHERE event_id = ?
         `).all(eventId);

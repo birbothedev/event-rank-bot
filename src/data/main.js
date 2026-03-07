@@ -9,7 +9,7 @@ export async function rankAllPlayers(players, eventId){
     const combinedData = await combineDataAndWriteToFile(playerDetails);
     const weightedData = await getAllPlayerWeights(combinedData);
 
-    const rankedPlayers = await rankPlayersFromPoints(weightedData, `ranked-data${eventId}`, 'outputs');
+    const rankedPlayers = await rankPlayersFromPoints(weightedData);
 
     return rankedPlayers;
 }
